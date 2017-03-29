@@ -89,7 +89,7 @@ store1.z = store1.z[which(store1.z$Dept == 7), ]
 
 windowed = store1.z
 
-#windowed = rollapply(store1.z, width = 3, FUN = mean, align = "left")
+windowed = rollapply(store1.z, width = 4, FUN = mean, align = "left")
 windowed$Dept=NULL
 windowed$Store=NULL
 # index(windowed) <- as.POSIXlt(index(windowed))
@@ -111,12 +111,15 @@ asd <-asd[!is.na(asd$Weekly_Sales),]
 
 
 weekNo <- as.POSIXlt(index(asd))
-asd[,3] <- strftime(weekNo,format="%W")
-asd[,4] <- strftime(weekNo,format="%Y")
+asd[,3] <- as.numeric(strftime(weekNo,format="%m"))
+asd[,4] <- as.numeric(strftime(weekNo,format="%Y"))
+
+
 
 tes <- coredata(asd)
 
 colnames(asd) <- c("Weekly_Sales","IsHoliday","WeekNo","Year")
+asd2<-df[!duplicated(df[c("a", "b")]),]
 
 
 #TODO CREEARE UN OGGETTO ZOO CHE ABBIA 52 SETTIMANE PER TUTTI I 3 ANNI (NA VALUES PER LE SETTIMANE CHE NON SONO NEI DATI EFFETTIVI )
@@ -124,7 +127,7 @@ colnames(asd) <- c("Weekly_Sales","IsHoliday","WeekNo","Year")
 
 
 
-years <- c(2010, 2011, 2012)#numero di reparti selezionati
+years <- c(2010, 2011,2012)#numero di reparti selezionati
 namedepts <-
   c("2010","2011","2012"  )
 # get the range for the x and y axis

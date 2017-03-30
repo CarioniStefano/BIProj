@@ -22,6 +22,7 @@ library(ggplot2)
 library(gridExtra)
 library(scales)
 library(reshape2)
+library(scales)
 
 
 options(scipen = 999)
@@ -84,6 +85,13 @@ stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
 store1.z = trainFile.z[which(trainFile.z$Store == 1), ]
 store1.z = store1.z[which(store1.z$Dept == 7), ]
 
+store2.z = trainFile.z[which(trainFile.z$Store == 3), ]
+store2.z = store2.z[which(store2.z$Dept == 7), ]
+
+store3.z = trainFile.z[which(trainFile.z$Store == 8), ]
+store3.z = store3.z[which(store3.z$Dept == 7), ]
+windowed3 = store3.z
+
 # 
 #
 
@@ -92,6 +100,12 @@ windowed = store1.z
 windowed = rollapply(store1.z, width = 4, FUN = mean, align = "left")
 windowed$Dept=NULL
 windowed$Store=NULL
+
+windowed2 = store2.z
+
+windowed2 = rollapply(store2.z, width = 4, FUN = mean, align = "left")
+windowed2$Dept=NULL
+windowed2$Store=NULL
 # index(windowed) <- as.POSIXlt(index(windowed))
 # index(windowed) <- strftime(index(windowed),format="%W")
 # plot(windowed)
@@ -107,19 +121,76 @@ Zooserie <- zoo(values, months)
 
 asd <- merge(windowed,Zooserie)
 asd <- merge(asd,Zooserie)
+asd <- merge(asd,Zooserie)
+
 asd <-asd[!is.na(asd$Weekly_Sales),]
+
+
+asd2 <- merge(windowed2,Zooserie)
+asd2 <- merge(asd2,Zooserie)
+asd2 <- merge(asd2,Zooserie)
+
+asd2 <-asd2[!is.na(asd2$Weekly_Sales),]
+
 
 
 weekNo <- as.POSIXlt(index(asd))
 asd[,3] <- as.numeric(strftime(weekNo,format="%m"))
 asd[,4] <- as.numeric(strftime(weekNo,format="%Y"))
+asd[,5] <- as.numeric(paste("1" , (strftime(weekNo,format="%Y%m")), sep = ""))
+
+weekNo2 <- as.POSIXlt(index(asd2))
+asd2[,3] <- as.numeric(strftime(weekNo2,format="%m"))
+asd2[,4] <- as.numeric(strftime(weekNo2,format="%Y"))
+asd2[,5] <- as.numeric( paste("2" , (strftime(weekNo2,format="%Y%m")), sep = ""))
 
 
 
-tes <- coredata(asd)
 
-colnames(asd) <- c("Weekly_Sales","IsHoliday","WeekNo","Year")
-asd2<-df[!duplicated(df[c("a", "b")]),]
+colnames(asd) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+colnames(asd2) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+
+asd<-asd[!duplicated(asd[,"Y+W"]),]
+
+asd2<-asd2[!duplicated(asd2[,"Y+W"]),]
+
+asd[,1] <- (rescale(asd[,1],to=c(0,1)))
+
+
+asd2[,1] <- (rescale(asd2[,1],to=c(0,1)))
+
+
+
+
+
+
+
+windowed3 = rollapply(store3.z, width = 4, FUN = mean, align = "left")
+windowed3$Dept=NULL
+windowed3$Store=NULL
+
+
+asd3 <- merge(windowed3,Zooserie)
+asd3 <- merge(asd3,Zooserie)
+asd3 <- merge(asd3,Zooserie)
+
+asd3 <-asd3[!is.na(asd3$Weekly_Sales),]
+
+
+weekNo <- as.POSIXlt(index(asd3))
+asd3[,3] <- as.numeric(strftime(weekNo,format="%m"))
+asd3[,4] <- as.numeric(strftime(weekNo,format="%Y"))
+asd3[,5] <- as.numeric(paste("3" , (strftime(weekNo,format="%Y%m")), sep = ""))
+
+colnames(asd3) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+asd3<-asd3[!duplicated(asd3[,"Y+W"]),]
+
+asd3[,1] <- (rescale(asd3[,1],to=c(0,1)))
+
+
+
+
+
 
 
 #TODO CREEARE UN OGGETTO ZOO CHE ABBIA 52 SETTIMANE PER TUTTI I 3 ANNI (NA VALUES PER LE SETTIMANE CHE NON SONO NEI DATI EFFETTIVI )
@@ -131,7 +202,7 @@ years <- c(2010, 2011,2012)#numero di reparti selezionati
 namedepts <-
   c("2010","2011","2012"  )
 # get the range for the x and y axis
-xrange <- range(0,53)
+xrange <- range(0,12)
 yrange <- range(asd[,1])
 print(yrange)
 plot(xrange,
@@ -151,7 +222,7 @@ for (j in years) {
       "chocolate4",
       "orange",
       "black",
-      "purple")
+      "purple","royalblue","seagreen4","violetred1")
   
   linetype <- 1
   pchDot <- 16
@@ -170,7 +241,38 @@ for (j in years) {
   )
   colIndex <- colIndex + 1
   
+  tempDept <- subset(asd2, Year == j)
+  print(range(tempDept$Weekly_Sales))
+  
+  
+  lines(
+    tempDept$WeekNo,
+    tempDept$Weekly_Sales ,
+    lwd = 2,
+    lty = linetype,
+    col = colors[colIndex],
+    pch = pchDot
+  )
+  colIndex <- colIndex + 1
+  
+  tempDept <- subset(asd3, Year == j)
+  print(range(tempDept$Weekly_Sales))
+  
+  
+  lines(
+    tempDept$WeekNo,
+    tempDept$Weekly_Sales ,
+    lwd = 2,
+    lty = linetype,
+    col = colors[colIndex],
+    pch = pchDot
+  )
+  colIndex <- colIndex + 1
+  
+  
 }
+
+
 legend(
   xrange[1],
   yrange[2],

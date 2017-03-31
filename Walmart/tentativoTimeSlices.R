@@ -23,6 +23,7 @@ library(gridExtra)
 library(scales)
 library(reshape2)
 library(scales)
+library(xts)
 
 
 options(scipen = 999)
@@ -58,9 +59,13 @@ trainFile.z <-
     index.column = 3,
     sep = ","
   )
-
-
 stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
+
+notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
+
+notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
+
+
 # dataNumber <- table(trainFile.z$Store)
 
 
@@ -80,7 +85,24 @@ stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
 # #####################################################################################################################
 # #####################################################################################################################
 # #####################################################################################################################
-# STORE CON MAGGIORI DATI
+
+storesNumbers = c(1,3,8)
+
+
+storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
+
+storesNumbers=tail(storesNumbers,-1)
+
+for(storeNo in storesNumbers){
+
+  print(storeNo)
+  storesBinded.z = cbind(storesBinded.z , notZoo[which(as.numeric(notZoo$Store) == storeNo), c(1,4)])
+
+}
+
+storesBinded.z = storesBinded.z[which(as.numeric(storesBinded.z$Dept) == 7), ]
+
+
 
 store1.z = trainFile.z[which(trainFile.z$Store == 1), ]
 store1.z = store1.z[which(store1.z$Dept == 7), ]

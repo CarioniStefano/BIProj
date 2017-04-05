@@ -59,12 +59,12 @@ options(scipen = 999)
 #     index.column = 3,
 #     sep = ","
 #   )
-# stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
-# 
-# notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
-# 
-# notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
-# 
+stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
+
+notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
+
+notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
+
 
 # dataNumber <- table(trainFile.z$Store)
 
@@ -99,11 +99,11 @@ for(deptSelected in deptNumbers){
   
   
   
-  
+  storesNumbers <- c(1,2,4,10,13,24)
   storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
   
   storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1, 4)]
-  storesNumbers <- c(1,2,4,10,13,24)
+  
   storesNumbers=tail(storesNumbers,-1)
   
   for(storeNo in storesNumbers){

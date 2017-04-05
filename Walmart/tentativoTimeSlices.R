@@ -51,14 +51,14 @@ options(scipen = 999)
 # #####################################################################################################################
 # #####################################################################################################################
 # #####################################################################################################################
-# 
-# trainFile.z <-
-#   read.zoo(
-#     file = "~/Lavoro/InputFiles/train.csv",
-#     header = TRUE,
-#     index.column = 3,
-#     sep = ","
-#   )
+
+trainFile.z <-
+  read.zoo(
+    file = "~/Lavoro/InputFiles/train.csv",
+    header = TRUE,
+    index.column = 3,
+    sep = ","
+  )
 stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
 
 notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
@@ -85,137 +85,225 @@ notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 # #####################################################################################################################
 # #####################################################################################################################
 # #####################################################################################################################
-storesNumbers = c(1,3,8,10,12,34,6,21,24,27,31)
-storesNumbersSecond = c(1,3,8,10,12,34,6,21,24,27,31)
+
+storesNumbers = c(1,3,8)
 
 
 storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
 
-storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1, 4)]
-
 storesNumbers=tail(storesNumbers,-1)
 
 for(storeNo in storesNumbers){
-  
+
   print(storeNo)
   storesBinded.z = cbind(storesBinded.z , notZoo[which(as.numeric(notZoo$Store) == storeNo), c(1,4)])
-  
+
 }
 
-storesBinded.z = storesBinded.z[which(as.numeric(storesBinded.z$Dept) == 91), ]
+storesBinded.z = storesBinded.z[which(as.numeric(storesBinded.z$Dept) == 7), ]
 
-from <- as.Date("2010-02-05")
-to <- as.Date("2012-10-26")
+
+
+store1.z = trainFile.z[which(trainFile.z$Store == 1), ]
+store1.z = store1.z[which(store1.z$Dept == 7), ]
+
+store2.z = trainFile.z[which(trainFile.z$Store == 3), ]
+store2.z = store2.z[which(store2.z$Dept == 7), ]
+
+store3.z = trainFile.z[which(trainFile.z$Store == 8), ]
+store3.z = store3.z[which(store3.z$Dept == 7), ]
+windowed3 = store3.z
+
+# 
+#
+
+windowed = store1.z
+
+windowed = rollapply(store1.z, width = 4, FUN = mean, align = "left")
+windowed$Dept=NULL
+windowed$Store=NULL
+
+windowed2 = store2.z
+
+windowed2 = rollapply(store2.z, width = 4, FUN = mean, align = "left")
+windowed2$Dept=NULL
+windowed2$Store=NULL
+# index(windowed) <- as.POSIXlt(index(windowed))
+# index(windowed) <- strftime(index(windowed),format="%W")
+# plot(windowed)
+from <- as.Date("2010-01-01")
+to <- as.Date("2012-12-31")
 months <- seq.Date(from=from,to=to,by="week")
 
 values <- rep.int(0,length(months))
 
 Zooserie <- zoo(values, months)
 
-storeWindowed <- Zooserie
-storeWindowed <- merge(storeWindowed,Zooserie)
-storeWindowed <- merge(storeWindowed,Zooserie)
-
-weekNo <- as.POSIXlt(index(storeWindowed))
-storeWindowed[,1] <- as.numeric((strftime(weekNo,format="%Y%m")), sep = "")
-storeWindowed[,2] <- as.numeric(strftime(weekNo,format="%m"))
-storeWindowed[,3] <- as.numeric(strftime(weekNo,format="%Y"))
-
-colnames(storeWindowed) <- c("YearMonth","Month","Year")
 
 
+asd <- merge(windowed,Zooserie)
+asd <- merge(asd,Zooserie)
+asd <- merge(asd,Zooserie)
 
-for(storeNo in storesNumbersSecond){
-  
-  # print(storeNo)
-  # print(match(storeNo,storesNumbersSecond))
-  # # rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")
-  # print(dim(storeWindowed))
-  # print(dim( rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")))
-  
-  storeWindowed = cbind(storeWindowed , rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
- 
-  
-}
+asd <-asd[!is.na(asd$Weekly_Sales),]
 
-storeWindowed<-storeWindowed[!duplicated(storeWindowed[,1]),]
 
-for(storeNo in storesNumbersSecond){
-  
-  storeWindowed[,(3+(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(3+(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
-  
-}
+asd2 <- merge(windowed2,Zooserie)
+asd2 <- merge(asd2,Zooserie)
+asd2 <- merge(asd2,Zooserie)
+
+asd2 <-asd2[!is.na(asd2$Weekly_Sales),]
 
 
 
-years <- c(2010,2011,2012)#numero di reparti selezionati
+weekNo <- as.POSIXlt(index(asd))
+asd[,3] <- as.numeric(strftime(weekNo,format="%m"))
+asd[,4] <- as.numeric(strftime(weekNo,format="%Y"))
+asd[,5] <- as.numeric(paste("1" , (strftime(weekNo,format="%Y%m")), sep = ""))
+
+weekNo2 <- as.POSIXlt(index(asd2))
+asd2[,3] <- as.numeric(strftime(weekNo2,format="%m"))
+asd2[,4] <- as.numeric(strftime(weekNo2,format="%Y"))
+asd2[,5] <- as.numeric( paste("2" , (strftime(weekNo2,format="%Y%m")), sep = ""))
+
+
+
+
+colnames(asd) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+colnames(asd2) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+
+asd<-asd[!duplicated(asd[,"Y+W"]),]
+
+asd2<-asd2[!duplicated(asd2[,"Y+W"]),]
+
+asd[,1] <- (rescale(asd[,1],to=c(0,1)))
+
+
+asd2[,1] <- (rescale(asd2[,1],to=c(0,1)))
+
+
+
+
+
+
+
+windowed3 = rollapply(store3.z, width = 4, FUN = mean, align = "left")
+windowed3$Dept=NULL
+windowed3$Store=NULL
+
+
+asd3 <- merge(windowed3,Zooserie)
+asd3 <- merge(asd3,Zooserie)
+asd3 <- merge(asd3,Zooserie)
+
+asd3 <-asd3[!is.na(asd3$Weekly_Sales),]
+
+
+weekNo <- as.POSIXlt(index(asd3))
+asd3[,3] <- as.numeric(strftime(weekNo,format="%m"))
+asd3[,4] <- as.numeric(strftime(weekNo,format="%Y"))
+asd3[,5] <- as.numeric(paste("3" , (strftime(weekNo,format="%Y%m")), sep = ""))
+
+colnames(asd3) <- c("Weekly_Sales","IsHoliday","WeekNo","Year","Y+W")
+asd3<-asd3[!duplicated(asd3[,"Y+W"]),]
+
+asd3[,1] <- (rescale(asd3[,1],to=c(0,1)))
+
+
+
+
+
+
+
+#TODO CREEARE UN OGGETTO ZOO CHE ABBIA 52 SETTIMANE PER TUTTI I 3 ANNI (NA VALUES PER LE SETTIMANE CHE NON SONO NEI DATI EFFETTIVI )
+# MERGE CON UN OGGETTO ZOO VUOTO?
+
+
+
+years <- c(2010, 2011,2012)#numero di reparti selezionati
 namedepts <-
   c("2010","2011","2012"  )
-
-
-colIndex <- 1
-
-colors = rainbow(ncol(storeWindowed))
-# colors <-
-#   c("coral1",
-#     "chartreuse3",
-#     "chocolate4",
-#     "orange",
-#     "black",
-#     "purple","royalblue","seagreen4","violetred1")
-
 # get the range for the x and y axis
 xrange <- range(0,12)
-yrange <- range(c(0,1))
-# print(yrange)
-# print(xrange)
+yrange <- range(asd[,1])
+print(yrange)
 plot(xrange,
      yrange,
      type = "n",
      xlab = "Date",
      ylab = "WeeklySales")
-
-
-
-
-
-linetype <- 1
-pchDot <- 16
-
+colIndex <- 1
 
 for (j in years) {
   
   print(j)
   
-  tempDept <- data.frame( subset(storeWindowed, Year == j))
- 
-  for(rowCount in 4:ncol(tempDept)){
-    
-    print(rowCount)
-   
-    lines(tempDept$Month,tempDept[,rowCount],
-      lty = linetype,
-      lwd = 2,
-      col = colors[colIndex],
-      pch = pchDot
-    )
-    colIndex <- colIndex + 1
-  }
-  # legend(
-  #   xrange[1],
-  #   yrange[2],
-  #   namedepts,
-  #   cex = 1,
-  #   col = colors,
-  #   pch = pchDot,
-  #   lty = linetype,
-  #   title = "Dept"
-  # )
+  colors <-
+    c("coral1",
+      "chartreuse3",
+      "chocolate4",
+      "orange",
+      "black",
+      "purple","royalblue","seagreen4","violetred1")
+  
+  linetype <- 1
+  pchDot <- 16
+  
+  tempDept <- subset(asd, Year == j)
+  print(range(tempDept$Weekly_Sales))
+  
+  
+  lines(
+    tempDept$WeekNo,
+    tempDept$Weekly_Sales ,
+    lwd = 2,
+    lty = linetype,
+    col = colors[colIndex],
+    pch = pchDot
+  )
+  colIndex <- colIndex + 1
+  
+  tempDept <- subset(asd2, Year == j)
+  print(range(tempDept$Weekly_Sales))
+  
+  
+  lines(
+    tempDept$WeekNo,
+    tempDept$Weekly_Sales ,
+    lwd = 2,
+    lty = linetype,
+    col = colors[colIndex],
+    pch = pchDot
+  )
+  colIndex <- colIndex + 1
+  
+  tempDept <- subset(asd3, Year == j)
+  print(range(tempDept$Weekly_Sales))
+  
+  
+  lines(
+    tempDept$WeekNo,
+    tempDept$Weekly_Sales ,
+    lwd = 2,
+    lty = linetype,
+    col = colors[colIndex],
+    pch = pchDot
+  )
+  colIndex <- colIndex + 1
   
   
 }
 
 
-
+legend(
+  xrange[1],
+  yrange[2],
+  namedepts,
+  cex = 1,
+  col = colors,
+  pch = pchDot,
+  lty = linetype,
+  title = "Dept"
+)
 
 

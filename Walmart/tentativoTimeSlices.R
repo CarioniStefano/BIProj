@@ -60,11 +60,19 @@ options(scipen = 999)
 #     sep = ","
 #   )
 stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
+stores$Type[stores$Type=="A"]  <- 100
+stores$Type[stores$Type=="B"]  <- 200
+stores$Type[stores$Type=="C"]  <- 300
 
 notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
 
+notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
+
+
+
 notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 
+# notZoo <- cbind(as.data.frame(notZoo),stores$Type[which(stores$Store==notZoo$Store)])
 
 # dataNumber <- table(trainFile.z$Store)
 
@@ -102,14 +110,14 @@ for(deptSelected in deptNumbers){
   storesNumbers <- c(1,2,4,10,13,24)
   storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
   
-  storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1, 4)]
+  storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1,6,4)]
   
   storesNumbers=tail(storesNumbers,-1)
   
   for(storeNo in storesNumbers){
     
     print(storeNo)
-    storesBinded.z = cbind(storesBinded.z , notZoo[which(as.numeric(notZoo$Store) == storeNo), c(1,4)])
+    storesBinded.z = cbind(storesBinded.z , notZoo[which(as.numeric(notZoo$Store) == storeNo), c(1,6,4)])
     
   }
   
@@ -129,16 +137,18 @@ for(deptSelected in deptNumbers){
   storeWindowed <- merge(storeWindowed,Zooserie)
   
   
+  
   weekNo <- as.POSIXlt(index(storeWindowed))
   storeWindowed[,1] <- as.numeric((strftime(weekNo,format="%Y%m")), sep = "")
   storeWindowed[,2] <- as.numeric(strftime(weekNo,format="%m"))
   storeWindowed[,3] <- as.numeric(strftime(weekNo,format="%Y"))
   storeWindowed[,4] <- as.numeric(storesBinded.z$Dept)
   
+  
   colnames(storeWindowed) <- c("YearMonth","Month","Year","Dept")
   
-  
-  
+  # 5 8 11 14
+  # 2+3*1  2+3*2  2+3*3 2+3*4
   for(storeNo in storesNumbersSecond){
     
     # print(storeNo)
@@ -146,8 +156,8 @@ for(deptSelected in deptNumbers){
     # # rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")
     # print(dim(storeWindowed))
     # print(dim( rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")))
-    
-    storeWindowed = cbind(storeWindowed , rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
+    storeWindowed <- cbind(storeWindowed , storesBinded.z[,(2+3*(match(storeNo,storesNumbersSecond)))])
+    storeWindowed <- cbind(storeWindowed , rollapply(storesBinded.z[,(3+3*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
     
     
   }
@@ -156,7 +166,7 @@ for(deptSelected in deptNumbers){
   
   for(storeNo in storesNumbersSecond){
     
-    storeWindowed[,(4+(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
+    storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
     
   }
   
@@ -207,17 +217,21 @@ for(deptSelected in deptNumbers){
     
     tempDept <- data.frame( subset(storeWindowed, Year == j))
     
-    for(rowCount in 5:ncol(tempDept)){
+    for(colCount in 6:ncol(tempDept)){
       
-      print(rowCount)
       
-      lines(tempDept$Month,tempDept[,rowCount],
+      print(colCount)
+      if(colCount%%2==0){
+        print(colCount)
+        if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+      lines(tempDept$Month,tempDept[,colCount],
             lty = linetype,
             lwd = 2,
             col = colors[colIndex],
             pch = pchDot
       )
       colIndex <- colIndex + 1
+      }
     }
     # legend(
     #   xrange[1],

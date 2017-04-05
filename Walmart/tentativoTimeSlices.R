@@ -162,6 +162,10 @@ for(deptSelected in deptNumbers){
   
   
   
+  deptDivisionList <- list(deptDivisionList,storeWindowed)
+  
+  
+  
   years <- c(2010,2011,2012)#numero di reparti selezionati
   namedepts <-
     c("2010","2011","2012"  )

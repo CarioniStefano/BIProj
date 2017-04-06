@@ -59,12 +59,52 @@ options(scipen = 999)
 #     index.column = 3,
 #     sep = ","
 #   )
+
+
+
 stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
 stores$Type[stores$Type=="A"]  <- 100
 stores$Type[stores$Type=="B"]  <- 200
 stores$Type[stores$Type=="C"]  <- 300
 
 notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
+trainFile.z <-
+  read.zoo(
+    file = "~/Lavoro/InputFiles/train.csv",
+    header = TRUE,
+    index.column = 3,
+    sep = ","
+  )
+
+store1.z = trainFile.z[which(trainFile.z$Store == 1), ]
+HolidayDates <- store1.z[which(store1.z$IsHoliday == 1), 4]
+HolidayDates <-
+  data.frame(
+    Date = time(HolidayDates),
+    HolidayDates,
+    check.names = FALSE,
+    row.names = NULL
+  )
+HolidayDates <- HolidayDates[!duplicated(HolidayDates),]
+
+values <- rep.int(0,nrow(HolidayDates))
+
+ZooSerieHoliday <- data.frame(values)
+
+
+HolidayDates <- cbind(HolidayDates,ZooSerieHoliday)
+HolidayDates <- cbind(HolidayDates,ZooSerieHoliday)
+HolidayDates <- cbind(HolidayDates,ZooSerieHoliday)
+
+
+
+weekNo <- as.POSIXlt(HolidayDates[,1])
+HolidayDates[,3] <- as.numeric((strftime(weekNo,format="%Y%m")), sep = "")
+HolidayDates[,4] <- as.numeric(strftime(weekNo,format="%m"))
+HolidayDates[,5] <- as.numeric(strftime(weekNo,format="%Y"))
+colnames(HolidayDates) <- c("Date","IsHoliday","YearMonth","Month","Year")
+
+
 
 notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
 
@@ -72,7 +112,7 @@ notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
 
 notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 
-# notZoo <- cbind(as.data.frame(notZoo),stores$Type[which(stores$Store==notZoo$Store)])
+
 
 # dataNumber <- table(trainFile.z$Store)
 
@@ -84,6 +124,9 @@ notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 # 2 10238
 # 4 10272
 # 24 10228
+#STORE A 4 13 1
+#STORE B 10 23 15
+# STORE C 30,37,38
 
 
 # #####################################################################################################################
@@ -93,13 +136,14 @@ notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 # #####################################################################################################################
 # #####################################################################################################################
 # #####################################################################################################################
-storesNumbers <- c(1,2,4,10,13,24)
-storesNumbersSecond <- c(1,2,4,10,13,24)
+storesNumbers <- c(4,13,1,10,23,15)
+storesNumbersSecond <- c(4,13,1,10,23,15)
 deptNumbers <- c(21,81,91,40,7,92)
 # deptNumbers <- c(21)
 
 deptDivisionList <- list()
 par(mfrow = c(3, 2))
+
 for(deptSelected in deptNumbers){
   
   print(deptSelected)
@@ -107,7 +151,7 @@ for(deptSelected in deptNumbers){
   
   
   
-  storesNumbers <- c(1,2,4,10,13,24)
+  storesNumbers <-c(4,13,1,10,23,15)
   storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
   
   storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1,6,4)]
@@ -193,7 +237,7 @@ for(deptSelected in deptNumbers){
   #     "purple","royalblue","seagreen4","violetred1")
   
   # get the range for the x and y axis
-  xrange <- range(0,12)
+  xrange <- range(1,12)
   yrange <- range(c(0,1))
   # print(yrange)
   # print(xrange)
@@ -204,48 +248,58 @@ for(deptSelected in deptNumbers){
        ylab = "WeeklySales")
   
   
-  
-  
-  
-  linetype <- 1
-  pchDot <- 16
-  
-  
   for (j in years) {
-    
-    print(j)
-    
-    tempDept <- data.frame( subset(storeWindowed, Year == j))
-    
-    for(colCount in 6:ncol(tempDept)){
+    for (holiday in c(1:length(HolidayDates$Date))) {
       
+      abline(v = HolidayDates[holiday, 4], col = "red")
       
-      print(colCount)
-      if(colCount%%2==0){
-        print(colCount)
-        if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
-      lines(tempDept$Month,tempDept[,colCount],
-            lty = linetype,
-            lwd = 2,
-            col = colors[colIndex],
-            pch = pchDot
-      )
-      colIndex <- colIndex + 1
-      }
     }
-    # legend(
-    #   xrange[1],
-    #   yrange[2],
-    #   namedepts,
-    #   cex = 1,
-    #   col = colors,
-    #   pch = pchDot,
-    #   lty = linetype,
-    #   title = "Dept"
-    # )
-    
-    
   }
-}
-
-
+    
+    
+    linetype <- 1
+    pchDot <- 16
+    
+    
+    for (j in years) {
+      
+      print(j)
+      
+      tempDept <- data.frame( subset(storeWindowed, Year == j))
+      
+      for(colCount in 6:ncol(tempDept)){
+        
+        
+        print(colCount)
+        
+        if(colCount%%2==0){
+          print(colCount)
+          if(tempDept[,colCount-1]==100){colors[colIndex]="red"}
+          if(tempDept[,colCount-1]==200){colors[colIndex]="green"}
+          if(tempDept[,colCount-1]==300){colors[colIndex]="red"}
+          lines(tempDept$Month,tempDept[,colCount],
+                lty = linetype,
+                lwd = 2,
+                col = colors[colIndex],
+                pch = pchDot
+          )
+          colIndex <- colIndex + 1
+        }
+      }
+      # legend(
+      #   xrange[1],
+      #   yrange[2],
+      #   namedepts,
+      #   cex = 1,
+      #   col = colors,
+      #   pch = pchDot,
+      #   lty = linetype,
+      #   title = "Dept"
+      # )
+      
+      
+    }
+  }
+  
+  
+  

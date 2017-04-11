@@ -70,7 +70,7 @@ notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
 
 
 
-notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
+notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC") ))
 
 
 # notZoo <- cbind(as.data.frame(notZoo),stores$Type[which(stores$Store==notZoo$Store)])
@@ -113,7 +113,7 @@ for(deptSelected in deptNumbers){
   
   storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1,6,4)]
   
-  z2 <- zoo("c", seq(from=as.Date('2010-01-01'), to=as.Date('2012-10-26'), by="week")) 
+  
   
   
   storesNumbers=tail(storesNumbers,-1)
@@ -126,131 +126,18 @@ for(deptSelected in deptNumbers){
   }
   
   storesBinded.z = storesBinded.z[which(as.numeric(storesBinded.z$Dept) == deptSelected), ]
-  
-  
-  from <- as.Date("2010-01-01")
-  to <- as.Date("2012-10-26")
-  months <- seq.Date(from=from,to=to,by="week")
-  
-  values <- rep.int(0,length(months))
-  
-  Zooserie <- zoo(values, months)
-  
-  storeWindowed <- Zooserie
-  storeWindowed <- merge(storeWindowed,Zooserie)
-  storeWindowed <- merge(storeWindowed,Zooserie)
-  storeWindowed <- merge(storeWindowed,Zooserie)
-  
-  
-  
-  weekNo <- as.POSIXlt(index(storeWindowed))
-  storeWindowed[,1] <- as.numeric((strftime(weekNo,format="%Y%m")), sep = "")
-  storeWindowed[,2] <- as.numeric(strftime(weekNo,format="%m"))
-  storeWindowed[,3] <- as.numeric(strftime(weekNo,format="%Y"))
-  storeWindowed[,4] <- as.numeric(head(storesBinded.z$Dept,1))
-  
-  
-  colnames(storeWindowed) <- c("YearMonth","Month","Year","Dept")
-  
-  # 5 8 11 14
-  # 2+3*1  2+3*2  2+3*3 2+3*4
-  for(storeNo in storesNumbersSecond){
-    
-    # print(storeNo)
-    # print(match(storeNo,storesNumbersSecond))
-    # # rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")
-    # print(dim(storeWindowed))
-    # print(dim( rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")))
-    storeWindowed <- cbind(storeWindowed , storesBinded.z[,(2+3*(match(storeNo,storesNumbersSecond)))])
-    storeWindowed <- cbind(storeWindowed , rollapply(storesBinded.z[,(3+3*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
-    
-    
-  }
-  
-  storeWindowed<-storeWindowed[!duplicated(storeWindowed[,1]),]
-  
-  for(storeNo in storesNumbersSecond){
-    
-    storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
-    
-  }
-  
-  
-  
-  deptDivisionList <- list(deptDivisionList,storeWindowed)
-  
-  
-  
-  years <- c(2010,2011,2012)#numero di reparti selezionati
-  namedepts <-
-    c("2010","2011","2012"  )
-  
-  
-  colIndex <- 1
-  
-  colors = rainbow(ncol(storeWindowed))
-  # colors <-
-  #   c("coral1",
-  #     "chartreuse3",
-  #     "chocolate4",
-  #     "orange",
-  #     "black",
-  #     "purple","royalblue","seagreen4","violetred1")
-  
-  # get the range for the x and y axis
-  xrange <- range(0,12)
-  yrange <- range(c(0,1))
-  # print(yrange)
-  # print(xrange)
-  plot(xrange,
-       yrange,
-       type = "n",
-       xlab = "Date",
-       ylab = "WeeklySales")
-  
-  
-  
-  
-  
-  linetype <- 1
-  pchDot <- 16
-  
-  
-  for (j in years) {
-    
-    print(j)
-    
-    tempDept <- data.frame( subset(storeWindowed, Year == j))
-    
-    for(colCount in 6:ncol(tempDept)){
-      
-      
-      print(colCount)
-      if(colCount%%2==0){
-        print(colCount)
-        if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
-      lines(tempDept$Month,tempDept[,colCount],
-            lty = linetype,
-            lwd = 2,
-            col = colors[colIndex],
-            pch = pchDot
-      )
-      colIndex <- colIndex + 1
-      }
-    }
-    # legend(
-    #   xrange[1],
-    #   yrange[2],
-    #   namedepts,
-    #   cex = 1,
-    #   col = colors,
-    #   pch = pchDot,
-    #   lty = linetype,
-    #   title = "Dept"
-    # )
-    
-    
-  }
 }
 
+from <- as.Date("2010-01-01")
+to <- as.Date("2012-10-26")
+months <- seq.Date(from=from,to=to,by="week")
 
+values <- rep.int(0,length(months))
+
+z1 <- zoo(values, months)
+
+dio <- xts(z1 , order.by=make.time.unique(as.POSIXct(index(z1)), tz="UTC" ) )
+
+
+
+asds <- merge(dio,storesBinded.z)

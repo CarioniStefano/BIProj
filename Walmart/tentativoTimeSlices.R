@@ -64,13 +64,13 @@ stores$Type[stores$Type=="A"]  <- 100
 stores$Type[stores$Type=="B"]  <- 200
 stores$Type[stores$Type=="C"]  <- 300
 
-notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
-
-notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
-
-
-
-notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
+# notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
+# 
+# notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
+# 
+# 
+# 
+# notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC") ))
 
 
 # notZoo <- cbind(as.data.frame(notZoo),stores$Type[which(stores$Store==notZoo$Store)])
@@ -96,14 +96,14 @@ notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3]) ))
 # #####################################################################################################################
 storesNumbers <- c(1,2,4,10,13,24)
 storesNumbersSecond <- c(1,2,4,10,13,24)
-deptNumbers <- c(21,81,91,40,7,92)
-# deptNumbers <- c(21)
+# deptNumbers <- c(21,81,91,40,7,92)
+deptNumbers <- c(21,40,7)
 
 deptDivisionList <- list()
-par(mfrow = c(3, 2))
+par(mfrow = c(3, 1))
 for(deptSelected in deptNumbers){
   
-  print(deptSelected)
+  # print(deptSelected)
   # deptDivisionList <- list(deptDivisionList,list(newObj))
   
   
@@ -113,23 +113,36 @@ for(deptSelected in deptNumbers){
   
   storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1,6,4)]
   
-  z2 <- zoo("c", seq(from=as.Date('2010-01-01'), to=as.Date('2012-10-26'), by="week")) 
+  
   
   
   storesNumbers=tail(storesNumbers,-1)
   
   for(storeNo in storesNumbers){
     
-    print(storeNo)
+    # print(storeNo)
     storesBinded.z = cbind(storesBinded.z , notZoo[which(as.numeric(notZoo$Store) == storeNo), c(1,6,4)])
     
   }
   
   storesBinded.z = storesBinded.z[which(as.numeric(storesBinded.z$Dept) == deptSelected), ]
   
+  from <- as.Date("2010-01-01")
+  to <- as.Date("2012-12-31")
+  months <- seq.Date(from=from,to=to,by="week")
+  
+  values <- rep.int(-999,length(months))
+  
+  rangeZooPre <- zoo(values, months)
+  
+  rangeZoo <- xts(rangeZooPre , order.by=make.time.unique(as.POSIXct(index(rangeZooPre)), tz="UTC" ) )
+  
+  
+  storesBinded.z <- merge(rangeZoo,storesBinded.z)
+  
   
   from <- as.Date("2010-01-01")
-  to <- as.Date("2012-10-26")
+  to <- as.Date("2012-12-31")
   months <- seq.Date(from=from,to=to,by="week")
   
   values <- rep.int(0,length(months))
@@ -147,7 +160,7 @@ for(deptSelected in deptNumbers){
   storeWindowed[,1] <- as.numeric((strftime(weekNo,format="%Y%m")), sep = "")
   storeWindowed[,2] <- as.numeric(strftime(weekNo,format="%m"))
   storeWindowed[,3] <- as.numeric(strftime(weekNo,format="%Y"))
-  storeWindowed[,4] <- as.numeric(head(storesBinded.z$Dept,1))
+  storeWindowed[,4] <- as.numeric(head(na.omit(storesBinded.z$Dept),1))
   
   
   colnames(storeWindowed) <- c("YearMonth","Month","Year","Dept")
@@ -161,19 +174,32 @@ for(deptSelected in deptNumbers){
     # # rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")
     # print(dim(storeWindowed))
     # print(dim( rollapply(storesBinded.z[,(3+2*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left")))
-    storeWindowed <- cbind(storeWindowed , storesBinded.z[,(2+3*(match(storeNo,storesNumbersSecond)))])
-    storeWindowed <- cbind(storeWindowed , rollapply(storesBinded.z[,(3+3*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
+    storeWindowed <- cbind(storeWindowed , storesBinded.z[,(3+3*(match(storeNo,storesNumbersSecond)))])
+    storeWindowed <- cbind(storeWindowed , rollapply(storesBinded.z[,(4+3*(match(storeNo,storesNumbersSecond)))], width = 4, FUN = mean, align = "left"))
     
     
   }
   
   storeWindowed<-storeWindowed[!duplicated(storeWindowed[,1]),]
   
+  
+  
   for(storeNo in storesNumbersSecond){
-    
-    storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
-    
+    print(median(na.omit(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))])))
+    storeWindowed[rowSums(is.na(storeWindowed)) > 0,(3+2*(match(storeNo,storesNumbersSecond)))] <- median(na.omit(storeWindowed[,(3+2*(match(storeNo,storesNumbersSecond)))]))
+    storeWindowed[rowSums(is.na(storeWindowed)) > 0,(4+2*(match(storeNo,storesNumbersSecond)))] <- median(na.omit(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))]))
+
+
+
   }
+  
+  
+  #scaling valori di vndita
+  # for(storeNo in storesNumbersSecond){
+  #   
+  #   storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))],to=c(0,1)))
+  #   
+  # }
   
   
   
@@ -199,7 +225,8 @@ for(deptSelected in deptNumbers){
   
   # get the range for the x and y axis
   xrange <- range(0,12)
-  yrange <- range(c(0,1))
+  yrange <- range(c(0,na.omit(max(storeWindowed[,4:ncol(storeWindowed)]))))
+  # yrange <- range(c(0,1)
   # print(yrange)
   # print(xrange)
   plot(xrange,
@@ -225,10 +252,10 @@ for(deptSelected in deptNumbers){
     for(colCount in 6:ncol(tempDept)){
       
       
-      print(colCount)
+      # print(colCount)
       if(colCount%%2==0){
         print(colCount)
-        if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+        # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
       lines(tempDept$Month,tempDept[,colCount],
             lty = linetype,
             lwd = 2,

@@ -25,6 +25,8 @@ library(reshape2)
 library(scales)
 library(xts)
 library(skmeans)
+library(fpc)
+
 
 
 options(scipen = 999)
@@ -97,8 +99,8 @@ stores$Type[stores$Type=="C"]  <- 300
 # #####################################################################################################################
 storesNumbers <- c(2,4,10,13,24,1)
 storesNumbersSecond <- c(2,4,10,13,24,1)
-# deptNumbers <- c(21,81,91,40,7,92)
-deptNumbers <- c(21,40,7)
+deptNumbers <- c(21,81,91,40,7,92)
+#deptNumbers <- c(21,40,7)
 
 deptDivisionList <- list()
 par(mfrow = c(1, 1))
@@ -197,12 +199,12 @@ for(deptSelected in deptNumbers){
   monthsMissing <-  coredata(storeWindowed[rowSums(is.na(storeWindowed)) > 0,2])
   
   for(monthCycle in monthsMissing){
-    print(monthCycle)
+    # print(monthCycle)
     for(storeNo in storesNumbersSecond){
       
       
       # print(storeWindowed[(rowSums(is.na(storeWindowed)) > 0 & which(as.numeric(storeWindowed$Month) == monthCycle)),(4+2*(match(storeNo,storesNumbersSecond)))])
-      print(mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Month) == monthCycle),(4+2*(match(storeNo,storesNumbersSecond)))]))    )
+      # print(mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Month) == monthCycle),(4+2*(match(storeNo,storesNumbersSecond)))]))    )
       storeWindowed[ ( rowSums(is.na(storeWindowed)) > 0 & (as.numeric(storeWindowed$Month) == monthCycle) ) ,(4+2*(match(storeNo,storesNumbersSecond)))] <- mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Month) == monthCycle),(4+2*(match(storeNo,storesNumbersSecond)))]))
       storeWindowed[rowSums(is.na(storeWindowed)) > 0,(3+2*(match(storeNo,storesNumbersSecond)))] <- median(na.omit(storeWindowed[,(3+2*(match(storeNo,storesNumbersSecond)))]))
       
@@ -229,14 +231,22 @@ for(deptSelected in deptNumbers){
   reversedStoreForCluster <- reversedStoreWindowed
   
   for(storeNo in storesNumbersSecond){
-    print((match(storeNo,storesNumbersSecond)))
+    #print((match(storeNo,storesNumbersSecond)))
     reversedStoreForCluster<- rbind(reversedStoreForCluster , reversedStoreWindowed[(4+2*(match(storeNo,storesNumbersSecond))),])
     
   }
   
   reversedStoreForCluster <- reversedStoreForCluster[(nrow(reversedStoreWindowed)+1):nrow(reversedStoreForCluster),]
   
-  clusterResult<-skmeans(x = reversedStoreForCluster, k=2)
+  
+  asw <- numeric(nrow(reversedStoreForCluster))
+  for (k in 2:nrow(reversedStoreForCluster)){
+    asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
+  }
+  k.best <- which.max(asw)
+  print(asw)
+  
+  clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
   
   # END CLUSTERING
   
@@ -292,10 +302,10 @@ for(deptSelected in deptNumbers){
         lines(tempDept$Month,tempDept[,colCount],
               lty = linetype,
               lwd = 2,
-              col = colors[clusterResult$cluster[((colCount-6)/2)+1]],
+              col = colors[clusterResult$cluster[((colCount-6)/2)+1]], #+1 perchè indice parte da 1
               pch = pchDot
         )
-       
+        
       }
     }
     # legend(
@@ -313,10 +323,5 @@ for(deptSelected in deptNumbers){
   }
 }
 
-for(colCount in 6:ncol(tempDept)){
-  
-  print(colors[clusterResult$cluster[((colCount-6)/2)+1]])
-}
 
-clusterResult$cluster[((colCount-6)/2)+1]
-  
+

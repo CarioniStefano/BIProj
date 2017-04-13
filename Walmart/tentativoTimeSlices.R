@@ -255,7 +255,8 @@ for(deptSelected in deptNumbers){
       # print(colCount)
       if(colCount%%2==0){
         print(colCount)
-        # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+         if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+        
       lines(tempDept$Month,tempDept[,colCount],
             lty = linetype,
             lwd = 2,

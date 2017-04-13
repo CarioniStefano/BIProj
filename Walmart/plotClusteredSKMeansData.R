@@ -95,13 +95,13 @@ stores$Type[stores$Type=="C"]  <- 300
 # #####################################################################################################################
 # #####################################################################################################################
 # #####################################################################################################################
-storesNumbers <- c(1,2,4,10,13,24)
-storesNumbersSecond <- c(1,2,4,10,13,24)
+storesNumbers <- c(2,4,10,13,24,1)
+storesNumbersSecond <- c(2,4,10,13,24,1)
 # deptNumbers <- c(21,81,91,40,7,92)
 deptNumbers <- c(21,40,7)
 
 deptDivisionList <- list()
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 1))
 for(deptSelected in deptNumbers){
   
   # print(deptSelected)
@@ -109,7 +109,7 @@ for(deptSelected in deptNumbers){
   
   
   
-  storesNumbers <- c(1,2,4,10,13,24)
+  storesNumbers <- c(2,4,10,13,24,1)
   storesBinded.z = notZoo[which(as.numeric(notZoo$Store) == head(storesNumbers,1)), ]
   
   storesBinded.z <- storesBinded.z[, c(3, 5, 2, 1,6,4)]
@@ -198,7 +198,7 @@ for(deptSelected in deptNumbers){
   
   for(monthCycle in monthsMissing){
     print(monthCycle)
-     for(storeNo in storesNumbersSecond){
+    for(storeNo in storesNumbersSecond){
       
       
       # print(storeWindowed[(rowSums(is.na(storeWindowed)) > 0 & which(as.numeric(storeWindowed$Month) == monthCycle)),(4+2*(match(storeNo,storesNumbersSecond)))])
@@ -206,11 +206,11 @@ for(deptSelected in deptNumbers){
       storeWindowed[ ( rowSums(is.na(storeWindowed)) > 0 & (as.numeric(storeWindowed$Month) == monthCycle) ) ,(4+2*(match(storeNo,storesNumbersSecond)))] <- mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Month) == monthCycle),(4+2*(match(storeNo,storesNumbersSecond)))]))
       storeWindowed[rowSums(is.na(storeWindowed)) > 0,(3+2*(match(storeNo,storesNumbersSecond)))] <- median(na.omit(storeWindowed[,(3+2*(match(storeNo,storesNumbersSecond)))]))
       
-     }
+    }
   }
   
   storeWindowed[ ( rowSums(is.na(storeWindowed)) > 0 & (as.numeric(storeWindowed$Month) == monthCycle) ) ,(4+2*(match(storeNo,storesNumbersSecond)))]
- 
+  
   
   #scaling valori di vndita
   # for(storeNo in storesNumbersSecond){
@@ -223,16 +223,31 @@ for(deptSelected in deptNumbers){
   
   deptDivisionList <- list(deptDivisionList,storeWindowed)
   
+  # CLUSTERING
   
+  reversedStoreWindowed <- t(storeWindowed)
+  reversedStoreForCluster <- reversedStoreWindowed
+  
+  for(storeNo in storesNumbersSecond){
+    print((match(storeNo,storesNumbersSecond)))
+    reversedStoreForCluster<- rbind(reversedStoreForCluster , reversedStoreWindowed[(4+2*(match(storeNo,storesNumbersSecond))),])
+    
+  }
+  
+  reversedStoreForCluster <- reversedStoreForCluster[(nrow(reversedStoreWindowed)+1):nrow(reversedStoreForCluster),]
+  
+  clusterResult<-skmeans(x = reversedStoreForCluster, k=2)
+  
+  # END CLUSTERING
   
   years <- c(2010,2011,2012)#numero di reparti selezionati
   namedepts <-
     c("2010","2011","2012"  )
   
   
-  colIndex <- 1
   
-  colors = rainbow(ncol(storeWindowed))
+  
+  colors = rainbow(length(unique(clusterResult$cluster)))
   # colors <-
   #   c("coral1",
   #     "chartreuse3",
@@ -277,10 +292,10 @@ for(deptSelected in deptNumbers){
         lines(tempDept$Month,tempDept[,colCount],
               lty = linetype,
               lwd = 2,
-              col = colors[colIndex],
+              col = colors[clusterResult$cluster[((colCount-6)/2)+1]],
               pch = pchDot
         )
-        colIndex <- colIndex + 1
+       
       }
     }
     # legend(
@@ -298,6 +313,10 @@ for(deptSelected in deptNumbers){
   }
 }
 
-skmeans(x = storeWindowed, k=2)
+for(colCount in 6:ncol(tempDept)){
+  
+  print(colors[clusterResult$cluster[((colCount-6)/2)+1]])
+}
 
-
+clusterResult$cluster[((colCount-6)/2)+1]
+  

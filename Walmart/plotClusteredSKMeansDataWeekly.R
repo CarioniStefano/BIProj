@@ -55,13 +55,43 @@ options(scipen = 999)
 # #####################################################################################################################
 # #####################################################################################################################
 # 
-# trainFile.z <-
-#   read.zoo(
-#     file = "~/Lavoro/InputFiles/train.csv",
-#     header = TRUE,
-#     index.column = 3,
-#     sep = ","
-#   )
+trainFile.z <-
+  read.zoo(
+    file = "~/Lavoro/InputFiles/train.csv",
+    header = TRUE,
+    index.column = 3,
+    sep = ","
+  )
+
+
+
+
+
+# 13 10474
+# 10 10315
+# 1 10244
+# 2 10238
+# 4 10272
+# 24 10228
+
+
+
+store1.z = trainFile.z[which(trainFile.z$Store == 1), ]
+HolidayDates <- store1.z[which(store1.z$IsHoliday == 1), 4]
+HolidayDates <-
+  data.frame(
+    Date = time(HolidayDates),
+    HolidayDates,
+    check.names = FALSE,
+    row.names = NULL
+  )
+
+HolidayDates <- HolidayDates[!duplicated(HolidayDates),]
+
+holidayWeekNo <- as.POSIXlt(HolidayDates[,1])
+HolidayDates[,2] <- as.numeric(strftime(holidayWeekNo,format="%W"))
+HolidayDates<-HolidayDates[!duplicated(HolidayDates[,2]),]
+
 stores <- read_csv("~/Lavoro/InputFiles/stores.csv")
 stores$Type[stores$Type=="A"]  <- 100
 stores$Type[stores$Type=="B"]  <- 200
@@ -74,6 +104,7 @@ notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
 
 
 notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC") ))
+
 
 
 # notZoo <- cbind(as.data.frame(notZoo),stores$Type[which(stores$Store==notZoo$Store)])
@@ -324,6 +355,16 @@ for(deptSelected in deptNumbers){
     
     
   }
+  
+  
+  
+  for(week in HolidayDates[,2]){
+    print(week)
+    abline(v =week, untf = FALSE)
+  }
+  
+  
+  
 }
 
 

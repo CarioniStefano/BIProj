@@ -296,7 +296,7 @@ for(deptSelected in deptNumbers){
   # END CLUSTERING
   
   
- 
+  
   
   years <- c(2010,2011,2012)#numero di reparti selezionati
   namedepts <-
@@ -306,7 +306,7 @@ for(deptSelected in deptNumbers){
   
   
   colors = rainbow(length(unique(clusterResult$cluster)))
-
+  
   
   # get the range for the x and y axis
   xrange <- range(1,53)
@@ -350,7 +350,7 @@ for(deptSelected in deptNumbers){
         
       }
     }
-
+    
     
   }
   

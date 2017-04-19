@@ -232,11 +232,13 @@ for(deptSelected in deptNumbers){
       # print(colCount)
       if(colCount%%2==1){
         print(colCount)
-        # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+        if(tempDept$Year==2010){collll="red"}
+        if(tempDept$Year==2011){collll="green"}
+        if(tempDept$Year==2012){collll="black"}
         lines(tempDept$Week,tempDept[,colCount],
               lty = linetype,
               lwd = 2,
-              col = "red", #+1 perchè indice parte da 1
+              col = collll, #+1 perchè indice parte da 1
               pch = pchDot
         )
         

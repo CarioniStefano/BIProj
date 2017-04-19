@@ -231,6 +231,32 @@ for(deptSelected in deptNumbers){
   
   weekMissing <-  coredata(storeWindowed[rowSums(is.na(storeWindowed)) > 0,2])
   
+  
+  meanDataFrame <- na.omit(storeWindowed)
+  
+  meanMatrix <- matrix(nrow=length(unique(meanDataFrame$Year)) , ncol=(length(unique(deptNumbers))))
+
+  yearList <- unique(meanDataFrame$Year)
+  
+  weekFrequency <- data.frame(count=sort(table(meanDataFrame$Week), decreasing=TRUE))
+  
+  asss <- weekFrequency [ which(weekFrequency[,2] == head(weekFrequency,1)[,2]) , 1] 
+  
+  for(year in yearList){
+    
+    for(storeNo in storesNumbersSecond){
+      meanMatrix[match(year,yearList),(match(storeNo,storesNumbersSecond))] <- mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% asss ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ])
+      
+    }
+    
+    
+  }
+  
+  print(mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% asss ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ]))
+  
+  
+  
+  
   for(weekCycle in weekMissing){
     # print(monthCycle)
     for(storeNo in storesNumbersSecond){
@@ -296,7 +322,7 @@ for(deptSelected in deptNumbers){
   # END CLUSTERING
   
   
- 
+  
   
   years <- c(2010,2011,2012)#numero di reparti selezionati
   namedepts <-
@@ -306,7 +332,7 @@ for(deptSelected in deptNumbers){
   
   
   colors = rainbow(length(unique(clusterResult$cluster)))
-
+  
   
   # get the range for the x and y axis
   xrange <- range(1,53)
@@ -350,7 +376,7 @@ for(deptSelected in deptNumbers){
         
       }
     }
-
+    
     
   }
   

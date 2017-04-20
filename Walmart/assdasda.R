@@ -235,24 +235,28 @@ for(deptSelected in deptNumbers){
   meanDataFrame <- na.omit(storeWindowed)
   
   meanMatrix <- matrix(nrow=length(unique(meanDataFrame$Year)) , ncol=(length(unique(deptNumbers))))
-
+  
   yearList <- unique(meanDataFrame$Year)
   
   weekFrequency <- data.frame(count=sort(table(meanDataFrame$Week), decreasing=TRUE))
   
-  asss <- weekFrequency [ which(weekFrequency[,2] == head(weekFrequency,1)[,2]) , 1] 
+  topFrequencies <- weekFrequency [ which(weekFrequency[,2] == head(weekFrequency,1)[,2]) , 1] 
+  # DA TESTARE APPROFONDITAMENTE
   
   for(year in yearList){
     
     for(storeNo in storesNumbersSecond){
-      meanMatrix[match(year,yearList),(match(storeNo,storesNumbersSecond))] <- mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% asss ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ])
+      meanMatrix[match(year,yearList),(match(storeNo,storesNumbersSecond))] <- mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% topFrequencies ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ])
       
     }
     
     
   }
   
-  print(mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% asss ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ]))
+  
+  
+  
+  
   
   
   
@@ -261,16 +265,18 @@ for(deptSelected in deptNumbers){
     # print(monthCycle)
     for(storeNo in storesNumbersSecond){
       
-      
-      # print(storeWindowed[(rowSums(is.na(storeWindowed)) > 0 & which(as.numeric(storeWindowed$Month) == monthCycle)),(4+2*(match(storeNo,storesNumbersSecond)))])
-      # print(mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Month) == monthCycle),(4+2*(match(storeNo,storesNumbersSecond)))]))    )
-      storeWindowed[ ( rowSums(is.na(storeWindowed)) > 0 & (as.numeric(storeWindowed$Week) == weekCycle) ) ,(5+2*(match(storeNo,storesNumbersSecond)))] <- mean(na.omit(storeWindowed[which(as.numeric(storeWindowed$Week) == weekCycle),(5+2*(match(storeNo,storesNumbersSecond)))]))
+      tempWeekValue <-((storeWindowed[which(as.numeric(storeWindowed$Week) == weekCycle),(5+2*(match(storeNo,storesNumbersSecond)))]))
+      tempMat <- cbind(tempWeekValue,meanMatrix[,match(storeNo,storesNumbersSecond)])
+      storeWindowed[ ( rowSums(is.na(storeWindowed)) > 0 & (as.numeric(storeWindowed$Week) == weekCycle) ) ,(5+2*(match(storeNo,storesNumbersSecond)))] <- (mean(na.omit(tempMat[,1]/tempMat[,2]))) * (tempMat[!complete.cases(tempMat),2])
       storeWindowed[rowSums(is.na(storeWindowed)) > 0,(4+2*(match(storeNo,storesNumbersSecond)))] <- median(na.omit(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))]))
       
     }
   }
   
-  #scaling valori di vndita
+  
+  
+  
+  #scaling valori di vendita
   # for(storeNo in storesNumbersSecond){
   #   
   #   storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))] <- (rescale(storeWindowed[,(4+2*(match(storeNo,storesNumbersSecond)))],to=c(0,1)))

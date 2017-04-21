@@ -130,8 +130,8 @@ notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC")
 # #####################################################################################################################
 storesNumbers <- c(2,4,10,13,24,1)
 storesNumbersSecond <- c(2,4,10,13,24,1)
-deptNumbers <- c(21,81,91,40,7,92)
-#deptNumbers <- c(21,40,7)
+#deptNumbers <- c(21,81,91,40,7,92)
+deptNumbers <- c(21,40,7)
 
 deptDivisionList <- list()
 
@@ -234,7 +234,7 @@ for(deptSelected in deptNumbers){
   
   meanDataFrame <- na.omit(storeWindowed)
   
-  meanMatrix <- matrix(nrow=length(unique(meanDataFrame$Year)) , ncol=(length(unique(deptNumbers))))
+  meanMatrix <- matrix(nrow=length(unique(meanDataFrame$Year)) , ncol=(length(unique(storesNumbersSecond))))
   
   yearList <- unique(meanDataFrame$Year)
   
@@ -246,18 +246,13 @@ for(deptSelected in deptNumbers){
   for(year in yearList){
     
     for(storeNo in storesNumbersSecond){
-      meanMatrix[match(year,yearList),(match(storeNo,storesNumbersSecond))] <- mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% topFrequencies ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ])
+      
+      meanMatrix[match(year,yearList),(match(storeNo,storesNumbersSecond))] <-  mean(meanDataFrame[( (as.numeric(meanDataFrame$Year) == year) & (as.numeric(meanDataFrame$Week) %in% topFrequencies ) ) , (5+2*(match(storeNo,storesNumbersSecond))) ])
       
     }
     
     
   }
-  
-  
-  
-  
-  
-  
   
   
   
@@ -290,88 +285,92 @@ for(deptSelected in deptNumbers){
   correlationMatrix <- data.frame()
   
   for(storeNo in storesNumbersSecond){
-    print((4+3*(match(storeNo,storesNumbersSecond))))
+    # print((4+3*(match(storeNo,storesNumbersSecond))))
     correlationMatrix <- cbind(correlationMatrix , storeWindowed[,(5+2*(match(storeNo,storesNumbersSecond)))])
   }
   
   
   cor.mat=cor(correlationMatrix)
-  print(cor.mat)
+  # print(cor.mat)
   rownames(correlationMatrix) <- NULL
   
   pairs(coredata(correlationMatrix),pch=18,col="blue",cex=1.5,cex.axis=1.5)
   
   
   # CLUSTERING
-  
-  reversedStoreWindowed <- t(storeWindowed)
-  reversedStoreForCluster <- reversedStoreWindowed
-  
-  for(storeNo in storesNumbersSecond){
-    #print((match(storeNo,storesNumbersSecond)))
-    reversedStoreForCluster<- rbind(reversedStoreForCluster , reversedStoreWindowed[(5+2*(match(storeNo,storesNumbersSecond))),])
+  clusterMatrix <- matrix(nrow=length(yearList) , ncol=(length(unique(storesNumbersSecond))))
+  par(mfrow = c(3, 1))
+  for(year in yearList){
     
-  }
-  
-  reversedStoreForCluster <- reversedStoreForCluster[(nrow(reversedStoreWindowed)+1):nrow(reversedStoreForCluster),]
-  
-  
-  asw <- numeric(nrow(reversedStoreForCluster))
-  for (k in 2:nrow(reversedStoreForCluster)){
-    asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
-  }
-  k.best <- which.max(asw)
-  print(asw)
-  
-  clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
-  
-  # END CLUSTERING
-  
-  
-  
-  
-  years <- c(2010,2011,2012)#numero di reparti selezionati
-  namedepts <-
-    c("2010","2011","2012"  )
-  
-  
-  
-  
-  colors = rainbow(length(unique(clusterResult$cluster)))
-  
-  
-  # get the range for the x and y axis
-  xrange <- range(1,53)
-  yrange <- range(c(0,na.omit(max(storeWindowed[,5:ncol(storeWindowed)]))))
-  # yrange <- range(c(0,1)
-  # print(yrange)
-  # print(xrange)
-  plot(xrange,
-       yrange,
-       type = "n",
-       xlab = "Date",
-       ylab = "WeeklySales")
-  
-  
-  
-  
-  
-  linetype <- 1
-  pchDot <- 16
-  
-  
-  for (j in years) {
+    reversedStoreWindowed <- t(storeWindowed[which(storeWindowed$Year==year),])
+    reversedStoreForCluster <- reversedStoreWindowed
     
-    # print(j)
+    for(storeNo in storesNumbersSecond){
+      #print((match(storeNo,storesNumbersSecond)))
+      reversedStoreForCluster<- rbind(reversedStoreForCluster , reversedStoreWindowed[(5+2*(match(storeNo,storesNumbersSecond))),])
+      
+    }
     
-    tempDept <- data.frame( subset(storeWindowed, Year == j))
+    reversedStoreForCluster <- reversedStoreForCluster[(nrow(reversedStoreWindowed)+1):nrow(reversedStoreForCluster),]
+    
+    
+    asw <- numeric(nrow(reversedStoreForCluster))
+    for (k in 2:nrow(reversedStoreForCluster)){
+      asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
+    }
+    k.best <- which.max(asw)
+    print(asw)
+    
+    clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
+    
+    
+    # END CLUSTERING
+    
+    
+    
+    
+    years <- c(2010,2011,2012)
+    namedepts <-
+      c("2010","2011","2012"  )
+    
+    
+    
+    
+    colors = rainbow(length(unique(clusterResult$cluster)))
+    
+    
+    # get the range for the x and y axis
+    xrange <- range(1,53)
+    yrange <- range(c(0,na.omit(max(storeWindowed[,5:ncol(storeWindowed)]))))
+    # yrange <- range(c(0,1)
+    # print(yrange)
+    # print(xrange)
+    plot(xrange,
+         yrange,
+         type = "n",
+         xlab = "Date",
+         ylab = "WeeklySales")
+    
+    
+    
+    
+    
+    linetype <- 1
+    pchDot <- 16
+    
+    
+    
+    
+    print(year)
+    
+    tempDept <- data.frame( subset(storeWindowed, Year == year))
     
     for(colCount in 7:ncol(tempDept)){
       
       
-      # print(colCount)
+       
       if(colCount%%2==1){
-        # print(colCount)
+        print(colCount)
         # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
         lines(tempDept$Week,tempDept[,colCount],
               lty = linetype,
@@ -384,15 +383,15 @@ for(deptSelected in deptNumbers){
     }
     
     
+    
+    
+    
+    
+    for(week in HolidayDates[,2]){
+      # print(week)
+      abline(v =week, untf = FALSE)
+    }
   }
-  
-  
-  
-  for(week in HolidayDates[,2]){
-    print(week)
-    abline(v =week, untf = FALSE)
-  }
-  
   
   
 }

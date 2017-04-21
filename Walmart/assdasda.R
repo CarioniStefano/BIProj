@@ -370,7 +370,7 @@ for(deptSelected in deptNumbers){
       
        
       if(colCount%%2==1){
-        print(colCount)
+        linetype<- (((colCount-7)/2)+1)
         # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
         lines(tempDept$Week,tempDept[,colCount],
               lty = linetype,

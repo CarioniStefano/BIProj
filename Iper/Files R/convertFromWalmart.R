@@ -125,5 +125,33 @@ selectedStoreDeptAggregated$SETTIMANANO <- substr(selectedStoreDeptAggregated[,3
 selectedStoreDeptAggregated$ANNONO <- substr(selectedStoreDeptAggregated[,3],1,4)
 
 
+# CREAZIONE MATRICE PER VALORI DI VENDITA CON RIGA CHE IDENTIFICA SETTIMANA E ANNO
+storeOrderedByWeek <- as.data.frame( selectedStoreDeptAggregated$ANNONO)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,selectedStoreDeptAggregated$SETTIMANANO)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,selectedStoreDeptAggregated$REPARTO)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek<- unique(storeOrderedByWeek)
 
+colnames(storeOrderedByWeek) <- c("ANNONO","SETTIMANANO","REPARTO","QUANTITAVENDUTATOTALE","VALOREVENDUTOTALE","VALOREVENDUTOPROMO")
+storeOrderedByWeek$ANNONO <- as.numeric(levels(storeOrderedByWeek$ANNONO))[as.integer(storeOrderedByWeek$ANNONO)] 
+storeOrderedByWeek$REPARTO <- as.numeric(as.character(storeOrderedByWeek$REPARTO) )
+storeOrderedByWeek$SETTIMANANO <- as.numeric(levels(storeOrderedByWeek$SETTIMANANO))[as.integer(storeOrderedByWeek$SETTIMANANO)] 
 
+for (currentYear in unique(storeOrderedByWeek$ANNONO)){
+  print(currentYear)
+  for(currentWeek in unique(storeOrderedByWeek$SETTIMANANO)){
+    print(currentWeek)
+    for(currentDept in unique(storeOrderedByWeek$REPARTO)){
+      
+      print(storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
+                                  as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek 
+                                 &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ), ])
+      
+      
+    }
+  }
+}
+
+# TODO CONTROLLARE QUI SOPRA LE SETTIMANE MANCANTI DALLA 19 DEL 2017

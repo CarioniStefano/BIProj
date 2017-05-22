@@ -57,13 +57,13 @@ options(scipen = 999)
 # 
 
 
-# trainFile.z <-
-#   read.zoo(
-#     file = "~/Lavoro/InputFiles/train.csv",
-#     header = TRUE,
-#     index.column = 3,
-#     sep = ","
-#   )
+trainFile.z <-
+  read.zoo(
+    file = "~/Lavoro/InputFiles/train.csv",
+    header = TRUE,
+    index.column = 3,
+    sep = ","
+  )
 
 
 
@@ -99,13 +99,13 @@ stores$Type[stores$Type=="A"]  <- 100
 stores$Type[stores$Type=="B"]  <- 200
 stores$Type[stores$Type=="C"]  <- 300
 
-# notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
-# 
-# notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
-# 
-# 
-# 
-# notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC") ))
+notZoo <- read.csv( file = "~/Lavoro/InputFiles/train.csv", header = TRUE, sep = ",")
+
+notZoo <- merge.data.frame(notZoo,stores,all=TRUE)
+
+
+
+notZoo <- xts(notZoo , order.by=make.time.unique(as.POSIXct(notZoo[,3],tz="UTC") ))
 
 
 

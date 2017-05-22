@@ -49,7 +49,7 @@ if(!exists("Estrazione")){
 
 
 
-# table(Estrazione[,1])
+#order( table(Estrazione[,1]))
 # Dati per store
 # 31 47622
 # 09 25879
@@ -60,8 +60,11 @@ if(!exists("Estrazione")){
 # 6 19754
 # 3 15528
 
-storesNumbers <- c(31,09,29)
+storesNumbers <- c(8, 1 , 7 , 4 , 6 , 9)
+storesNumbersSecond <- c(8, 1 , 7 , 4 , 6 , 9)
+# storesNumbers <- c(31,9,29)
 deptNumbers <- c(3,4,6)
+deptNumbersSecond <- c(3,4,6)
 
 
 storesBinded = Estrazione[which(as.numeric(Estrazione$ENTE) == head(storesNumbers,1)), ]
@@ -97,6 +100,7 @@ yearDivided <- list()
 
 yearList <- c(2014,2015,2016,2017)
 
+
 for(year in yearList){
   
   
@@ -126,9 +130,29 @@ selectedStoreDeptAggregated$ANNONO <- substr(selectedStoreDeptAggregated[,3],1,4
 
 
 # CREAZIONE MATRICE PER VALORI DI VENDITA CON RIGA CHE IDENTIFICA SETTIMANA E ANNO
+from <- as.Date("2013-12-30")
+to <- as.Date("2017-05-01")
+months <- seq.Date(from=from,to=to,by="week")
+
+values <- rep.int(0,length(months))
+
+Zooserie <- zoo(values, months)
+
+asaasas <- Zooserie
+
+
 storeOrderedByWeek <- as.data.frame( selectedStoreDeptAggregated$ANNONO)
 storeOrderedByWeek <- cbind(storeOrderedByWeek,selectedStoreDeptAggregated$SETTIMANANO)
 storeOrderedByWeek <- cbind(storeOrderedByWeek,selectedStoreDeptAggregated$REPARTO)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
+storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
 storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
 storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
 storeOrderedByWeek <- cbind(storeOrderedByWeek,NA)
@@ -157,19 +181,19 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
       {
         storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                     as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
-                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
-                                                                                                                                                              as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
-                                                                                                                                                            &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`VALORE VENDUTO TOTALE`   )
+                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
+                                                                                                                                                                    as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
+                                                                                                                                                                  &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`VALORE VENDUTO TOTALE`   )
         storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                     as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
-                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(7,8,9) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
-                                                                                                                                                              as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
-                                                                                                                                                            &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`VALORE VENDUTO PROMO`   )
+                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(10,11,12,13,14,15) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
+                                                                                                                                                                          as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
+                                                                                                                                                                        &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`VALORE VENDUTO PROMO`   )
         storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                     as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
-                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(10,11,12) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
-                                                                                                                                                                 as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
-                                                                                                                                                               &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`QUANTITA' VENDUTA TOTALE`   )
+                                  &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(16,17,18,19,20,21) ]  <-(selectedStoreDeptAggregated[which (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) == currentDept &
+                                                                                                                                                                          as.numeric(as.character(selectedStoreDeptAggregated$SETTIMANANO)) == currentWeek
+                                                                                                                                                                        &  as.numeric(as.character(selectedStoreDeptAggregated$ANNONO)) == currentYear ), ]$`QUANTITA' VENDUTA TOTALE`   )
         
         
         
@@ -182,13 +206,14 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
   }
 }
 
-colnames(storeOrderedByWeek) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1","VALORETOT2","VALORETOT3","VALOREPROMO1","VALOREPROMO2","VALOREPROMO3","QUANTITA1","QUANTITA2","QUANTITA3")
+colnames(storeOrderedByWeek) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1","VALORETOT2","VALORETOT3","VALORETOT4","VALORETOT5","VALORETOT6","VALOREPROMO1","VALOREPROMO2","VALOREPROMO3",
+                                  "VALOREPROMO4","VALOREPROMO5","VALOREPROMO6","QUANTITA1","QUANTITA2","QUANTITA3","QUANTITA4","QUANTITA5","QUANTITA6")
 
 
 
 
 
-
+# ##########################################################RIMOZIONE SETTIMANA 53
 
 # I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PIù ALLA SETTIMANA
 # QUINDI MEDIO LA SETTIMANA 53 DEL 2015 CON LA SETTIMANA 52 DELLO STESSO ANNO
@@ -216,13 +241,13 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
           yearAfter <- currentYear+1
           valueCurrentweek <- storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                                           as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
-                                                        &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12) ] 
+                                                        &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ] 
           valueWeekBefore <- storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                                          as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == weekBefore
-                                                       &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12) ]
+                                                       &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ]
           valueWeekAfter <- storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                                         as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == weekAfter
-                                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == yearAfter ),c(4,5,6,7,8,9,10,11,12) ]
+                                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == yearAfter ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ]
           meanBefore <- rowMeans(valueWeekBefore - valueCurrentweek)
           meanAfter <- rowMeans(valueWeekAfter - valueCurrentweek)
           
@@ -235,7 +260,7 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
             print(colMeans(valueWeek))
             storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                         as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == weekBefore
-                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12) ]<- colMeans(valueWeek)
+                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ]<- colMeans(valueWeek)
             
             storeOrderedByWeek <- storeOrderedByWeek[ (which (!(as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                                                   as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
@@ -251,7 +276,7 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
             print(colMeans(valueWeek))
             storeOrderedByWeek[which (as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                         as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == weekAfter
-                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == yearAfter ),c(4,5,6,7,8,9,10,11,12) ]<- colMeans(valueWeek)
+                                      &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == yearAfter ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ]<- colMeans(valueWeek)
             storeOrderedByWeek <- storeOrderedByWeek[ (which (!(as.numeric(as.character(storeOrderedByWeek$REPARTO)) == currentDept &
                                                                   as.numeric(as.character(storeOrderedByWeek$SETTIMANANO)) == currentWeek
                                                                 &  as.numeric(as.character(storeOrderedByWeek$ANNONO)) == currentYear ))), ] 
@@ -266,6 +291,70 @@ for (currentYear in unique(storeOrderedByWeek$ANNONO)){
       
     }
   }
+}
+
+yearList2 <- c(2014,2015,2016)
+par(mfrow = c(3, 1))
+
+# ###############################################.CLUSTERING
+for(year in yearList2){
+  
+  
+  print("year cycle")
+  print(year)
+  
+  for(deptSelected in deptNumbersSecond){
+    print("dept cycle")
+    print(deptSelected)
+    reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek[which(storeOrderedByWeek$ANNONO==year & storeOrderedByWeek$REPARTO==deptSelected),])
+    
+    reversedStoreForClusterIper <- reversedStoreOrderedByWeekIper
+    
+    for(storeNo in storesNumbersSecond){
+      #print((match(storeNo,storesNumbersSecond)))
+      reversedStoreForClusterIper<- rbind(reversedStoreForClusterIper , reversedStoreOrderedByWeekIper[(3+(match(storeNo,storesNumbersSecond))),])
+      
+    }
+    
+    reversedStoreForClusterIper <- reversedStoreForClusterIper[(nrow(reversedStoreOrderedByWeekIper)+1):nrow(reversedStoreForClusterIper),]
+    cosineDistanceMatrix <- matrix(nrow=nrow(reversedStoreForClusterIper),ncol=nrow(reversedStoreForClusterIper))
+    
+    for (x in 1:nrow(reversedStoreForClusterIper)){
+      
+      for(y in 1: nrow(reversedStoreForClusterIper)){
+        
+        cosineDistanceMatrix[x ,y ] <- (1 - ( (reversedStoreForClusterIper[x,] %*% reversedStoreForClusterIper[y,]) / 
+                                                (sqrt((reversedStoreForClusterIper[x,]%*%reversedStoreForClusterIper[x,]) * (reversedStoreForClusterIper[y,]%*%reversedStoreForClusterIper[y,]) ))))
+        
+      }
+    }
+    
+    
+    List <- list()
+    listSilhouette <- list()
+    listSilhouetteAvgWidth <- list()
+    
+    asw <- numeric(nrow(reversedStoreForClusterIper))
+    for (k in 2:(nrow(reversedStoreForClusterIper) -1) ){
+      # print("cluster")
+      print(k)
+      List[[k]] <- skmeans(x = reversedStoreForClusterIper, k=k ,control=list(verbose=FALSE))
+       plot(silhouette(List[[k]]))
+      listSilhouette[[k]] <- silhouette(x=List[[k]]$cluster, dmatrix = t(cosineDistanceMatrix))
+      print((summary(listSilhouette[[k]])$avg.width))
+      listSilhouetteAvgWidth[k] <- (summary(listSilhouette[[k]])$avg.width)
+      
+      # asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
+      # clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
+    }
+    print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster è da 2 sta nell index 1, quindi +1
+    bestClusterNo = (which.max(unlist(listSilhouetteAvgWidth)))
+    clusterMatrix = do.call(cbind, List)
+    print(clusterMatrix[,bestClusterNo]$cluster)
+    
+    
+  }
+  
 }
 
 

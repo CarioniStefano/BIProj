@@ -297,13 +297,35 @@ yearList2 <- c(2014,2015,2016)
 par(mfrow = c(3, 1))
 
 # ###############################################.CLUSTERING
+
+
+
+
+
+
+
+listYears <- list() #CONTIENE LE LISTE DI TUTTI I DIPARTIMNTI DI QUELL'ANNO
+
+
+
+
 for(year in yearList2){
   
   
   print("year cycle")
   print(year)
   
+  
+  
+  listAllDeptYear <- list() #contiene tutte le liste dei dipartimenti per un anno
+  
+  
   for(deptSelected in deptNumbersSecond){
+    
+    
+    
+    
+    
     print("dept cycle")
     print(deptSelected)
     reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek[which(storeOrderedByWeek$ANNONO==year & storeOrderedByWeek$REPARTO==deptSelected),])
@@ -330,31 +352,53 @@ for(year in yearList2){
     }
     
     
-    List <- list()
-    listSilhouette <- list()
-    listSilhouetteAvgWidth <- list()
+    
+    listSkMeans <- list() #CONTIENE I RISULTATI DELL'SKMEANS PER OGNI TENTATIVO DI CLUSTER
+    listSilhouette <- list() #CONTIENE LA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
+    listSilhouetteAvgWidth <- list() #CONTIENE LA MEDIA DELLA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
+    listBestCluster <- list() #CONTIENE IL MIGLIOR CLUSTER BASATO SUI RISULTATI DELLA SILHOUETTE
+    listMatrixDeptYears <- list() #CONTIENE LA MATRICE DEI CLUSTER PER OGNI REPARTO PER OGNI ANNO
     
     asw <- numeric(nrow(reversedStoreForClusterIper))
     for (k in 2:(nrow(reversedStoreForClusterIper) -1) ){
-      # print("cluster")
+      print("cluster")
       print(k)
-      List[[k]] <- skmeans(x = reversedStoreForClusterIper, k=k ,control=list(verbose=FALSE))
-       plot(silhouette(List[[k]]))
-      listSilhouette[[k]] <- silhouette(x=List[[k]]$cluster, dmatrix = t(cosineDistanceMatrix))
+      listSkMeans[[k]] <- skmeans(x = reversedStoreForClusterIper, k=k ,control=list(verbose=FALSE))
+      
+      # plot(silhouette(listSkMeans[[k]]))
+       
+      listSilhouette[[k]] <- silhouette(x=listSkMeans[[k]]$cluster, dmatrix = t(cosineDistanceMatrix))
+      
       print((summary(listSilhouette[[k]])$avg.width))
       listSilhouetteAvgWidth[k] <- (summary(listSilhouette[[k]])$avg.width)
       
       # asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
       # clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
     }
+    
     print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster è da 2 sta nell index 1, quindi +1
     bestClusterNo = (which.max(unlist(listSilhouetteAvgWidth)))
-    clusterMatrix = do.call(cbind, List)
+    clusterMatrix = do.call(cbind, listSkMeans)
     print(clusterMatrix[,bestClusterNo]$cluster)
     
+    listMatrixDeptYears[[(match(deptSelected,deptNumbersSecond))]] <- clusterMatrix    
+    
+    listBestCluster[[match(deptSelected,deptNumbersSecond)]] <- clusterMatrix[,bestClusterNo]$cluster #CONTIENE IL MIGLIOR CLUSTER PER OGNI DEPT PER OGNI ANNO
+    
+    
+    listSummaryDeptYears <-list(listSkMeans,listSilhouette,listSilhouetteAvgWidth, listMatrixDeptYears ,listBestCluster) #CONTIENE LE 5 LISTE PER DIPARTIMENTO PER ANNO
+    
+    listAllDeptYear[[match(deptSelected,deptNumbersSecond)]] <- listSummaryDeptYears
     
   }
   
+  listYears[[match(year,yearList2)]] <- listAllDeptYear
+  
 }
 
+# LISTE YEAR CONTIENE 
+# LIVELLO 1 : I TRE ANNI 2014,2015,2016
+# LIVELLO 2 : I TRE REPARTI 3 , 4, 6
+# LIVELLO 3 : LE 5 LISTE CHE RIASSUMONO IL DIPARTIMENTO
+# LIVELLO 4 : I SOTTOLIVELLI DI OGNI LISTA DESCRITTIVA
 

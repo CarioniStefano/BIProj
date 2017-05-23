@@ -302,7 +302,7 @@ par(mfrow = c(3, 1))
 
 
 
-
+set.seed(4884)
 
 listYears <- list() #CONTIENE LE LISTE DI TUTTI I DIPARTIMNTI DI QUELL'ANNO
 
@@ -312,8 +312,8 @@ listYears <- list() #CONTIENE LE LISTE DI TUTTI I DIPARTIMNTI DI QUELL'ANNO
 for(year in yearList2){
   
   
-  print("year cycle")
-  print(year)
+  # print("year cycle")
+  # print(year)
   
   
   
@@ -326,8 +326,8 @@ for(year in yearList2){
     
     
     
-    print("dept cycle")
-    print(deptSelected)
+    # print("dept cycle")
+    # print(deptSelected)
     reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek[which(storeOrderedByWeek$ANNONO==year & storeOrderedByWeek$REPARTO==deptSelected),])
     
     reversedStoreForClusterIper <- reversedStoreOrderedByWeekIper
@@ -361,25 +361,25 @@ for(year in yearList2){
     
     asw <- numeric(nrow(reversedStoreForClusterIper))
     for (k in 2:(nrow(reversedStoreForClusterIper) -1) ){
-      print("cluster")
-      print(k)
+      # print("cluster")
+      # print(k)
       listSkMeans[[k]] <- skmeans(x = reversedStoreForClusterIper, k=k ,control=list(verbose=FALSE))
       
       # plot(silhouette(listSkMeans[[k]]))
-       
+      
       listSilhouette[[k]] <- silhouette(x=listSkMeans[[k]]$cluster, dmatrix = t(cosineDistanceMatrix))
       
-      print((summary(listSilhouette[[k]])$avg.width))
+      # print((summary(listSilhouette[[k]])$avg.width))
       listSilhouetteAvgWidth[k] <- (summary(listSilhouette[[k]])$avg.width)
       
       # asw[[k]] <- pam(coredata(t(reversedStoreForCluster)), k) $ silinfo $ avg.width
       # clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
     }
     
-    print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster è da 2 sta nell index 1, quindi +1
+    # print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster è da 2 sta nell index 1, quindi +1
     bestClusterNo = (which.max(unlist(listSilhouetteAvgWidth)))
     clusterMatrix = do.call(cbind, listSkMeans)
-    print(clusterMatrix[,bestClusterNo]$cluster)
+    # print(clusterMatrix[,bestClusterNo]$cluster)
     
     listMatrixDeptYears[[(match(deptSelected,deptNumbersSecond))]] <- clusterMatrix    
     
@@ -401,4 +401,30 @@ for(year in yearList2){
 # LIVELLO 2 : I TRE REPARTI 3 , 4, 6
 # LIVELLO 3 : LE 5 LISTE CHE RIASSUMONO IL DIPARTIMENTO
 # LIVELLO 4 : I SOTTOLIVELLI DI OGNI LISTA DESCRITTIVA
+
+
+
+clusterDataframe <- as.data.frame( selectedStoreDeptAggregated$ANNONO)
+
+clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$REPARTO)
+
+clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$ENTE)
+
+clusterDataframe <- unique(clusterDataframe)
+
+
+colnames(clusterDataframe) <- c("ANNONO","REPARTO","ENTE")
+clusterDataframe <- clusterDataframe[!clusterDataframe$ANNONO == as.numeric("2017"), ]
+clusterVector <- c()
+
+for(year in yearList2){
+  
+  for(deptSelected in deptNumbersSecond){
+    
+    clusterVector <- append(clusterVector,listYears[[match(year,yearList2)]][[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]])
+    
+  }
+}
+
+clusterDataframe <- cbind(clusterDataframe,clusterVector)
 

@@ -42,7 +42,7 @@ if(!exists("Estrazione")){
                                                                                                                "numeric"), sheet = sheet))
   }
   
-  View(Estrazione)
+  #View(Estrazione)
   
 }
 
@@ -406,15 +406,31 @@ for(year in yearList2){
 
 clusterDataframe <- as.data.frame( selectedStoreDeptAggregated$ANNONO)
 
+clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$SETTIMANANO)
+
 clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$REPARTO)
 
-clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$ENTE)
+
+
+
+
 
 clusterDataframe <- unique(clusterDataframe)
 
 
-colnames(clusterDataframe) <- c("ANNONO","REPARTO","ENTE")
+colnames(clusterDataframe) <- c("ANNONO","SETTIMANANO","REPARTO")
+
+
+clusterDataframe <- clusterDataframe[!clusterDataframe$SETTIMANANO==53,]
+
+clusterDataframe <- cbind(clusterDataframe , storeOrderedByWeek[,4:9])
+
+
+
 clusterDataframe <- clusterDataframe[!clusterDataframe$ANNONO == as.numeric("2017"), ]
+
+clusterDataframe <- (clusterDataframe[with(clusterDataframe, order(ANNONO, REPARTO,SETTIMANANO)), ])
+
 clusterVector <- c()
 
 for(year in yearList2){
@@ -426,5 +442,177 @@ for(year in yearList2){
   }
 }
 
-clusterDataframe <- cbind(clusterDataframe,clusterVector)
 
+
+
+
+# clusterDataframe <- cbind(clusterDataframe,CLUSTER=rep(clusterVector, each=52))
+
+# indice di cluster: lista di k di cluster > cluster assignment colore diverso in base al cluster
+# forme tipiche per dipartimento giocattoli quindi rivelo i cluster dei reparti
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+par(mfrow = c(1, 1))
+
+for(deptSelected in deptNumbersSecond){
+  
+  
+  
+  
+  
+  
+  
+  
+  colors = c("red","green","blue","black","yellow")
+  
+  
+  # get the range for the x and y axis
+  xrange <- range(1,53)
+  yrange <- range(c(0,na.omit(max(clusterDataframe[,4:ncol(clusterDataframe)]))))
+  # yrange <- range(c(0,1)
+  # print(yrange)
+  # print(xrange)
+  plot(xrange,
+       yrange,
+       type = "n",
+       xlab = "WEEKNO",
+       ylab = "WeeklySales")
+  
+  
+  
+  
+  
+  linetype <- 1
+  pchDot <- 16
+  
+  
+  
+  
+  print(deptSelected)
+  
+  tempDept <-  clusterDataframe[(as.numeric(as.character(clusterDataframe$REPARTO)) == deptSelected), ]
+  
+  # print(tempDept)
+  
+  for(yearSelected in yearList2){
+    
+    
+    
+    tempDept2 <-  tempDept[(as.numeric(as.character(tempDept$ANNONO)) == yearSelected), ]
+    linetype=(as.numeric(as.character(head(tempDept[(as.numeric(as.character(tempDept$ANNONO)) == yearSelected & as.numeric(as.character(tempDept$REPARTO)) == deptSelected), ]$ANNONO,1) )))-2013
+    
+    for(colCount in 4:ncol(tempDept)){
+      
+      color = listYears[[match(yearSelected,yearList2)]][[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]][colCount-4]
+      print(color)
+      print(as.numeric((tempDept2$ANNONO))-2014)
+      # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+      lines(tempDept2$SETTIMANANO,tempDept2[,colCount],
+            lty = linetype,
+            lwd = 2,
+            col = colors[color], #+1 perchè indice parte da 1
+            pch = pchDot
+      )
+      
+      
+    }
+  }
+  
+  
+  legend( x="topleft", 
+          legend=c("2014","2015","2016"),
+          col=c("black","black","black"), lwd=1, lty=c(1,2,3), 
+          )
+  
+}
+
+
+# per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore
+ 
+
+
+for(deptSelected in deptNumbersSecond){
+  
+  
+  
+  
+  
+  
+  
+  
+  colors = c("red","green","blue","black","yellow")
+  
+  
+  # get the range for the x and y axis
+  xrange <- range(1,53)
+  yrange <- range(c(0,na.omit(max(clusterDataframe[,4:ncol(clusterDataframe)]))))
+  # yrange <- range(c(0,1)
+  # print(yrange)
+  # print(xrange)
+  plot(xrange,
+       yrange,
+       type = "n",
+       xlab = "WEEKNO",
+       ylab = "WeeklySales")
+  
+  
+  
+  
+  
+  linetype <- 1
+  pchDot <- 16
+  
+  
+  
+  
+  print(deptSelected)
+  
+  tempDept <-  clusterDataframe[(as.numeric(as.character(clusterDataframe$REPARTO)) == deptSelected), ]
+  
+  # print(tempDept)
+  
+  for(yearSelected in yearList2){
+    
+    
+    
+    tempDept2 <-  tempDept[(as.numeric(as.character(tempDept$ANNONO)) == yearSelected), ]
+    linetype=(as.numeric(as.character(head(tempDept[(as.numeric(as.character(tempDept$ANNONO)) == yearSelected & as.numeric(as.character(tempDept$REPARTO)) == deptSelected), ]$ANNONO,1) )))-2013
+    
+    for(colCount in 4:ncol(tempDept)){
+      
+      color = listYears[[match(yearSelected,yearList2)]][[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]][colCount-4]
+      print(color)
+      print(as.numeric((tempDept2$ANNONO))-2014)
+      # if(tempDept[,colCount-1]==200){colors[colIndex]="black"}
+      lines(tempDept2$SETTIMANANO,tempDept2[,colCount],
+            lty = linetype,
+            lwd = 2,
+            col = colors[color], #+1 perchè indice parte da 1
+            pch = pchDot
+      )
+      
+      
+    }
+  }
+  
+  
+  legend( x="topleft", 
+          legend=c("2014","2015","2016"),
+          col=c("black","black","black"), lwd=1, lty=c(1,2,3), 
+  )
+  
+}

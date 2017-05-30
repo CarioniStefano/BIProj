@@ -66,7 +66,7 @@ for (deptSelected in deptNumbersSecond) {
        yrange,
        type = "n",
        xlab = "WEEKNO",
-       ylab = "WeeklySales", main="Centroidi")
+       ylab = "WeeklySales", main=paste("Centroidi reparto", deptSelected,sep=" "))
   
   for(clusterSelected in clusterNo){
     print(clusterSelected)

@@ -1,5 +1,5 @@
-# dividere in due grafifi, uno per cluster
-# un altro grafico coi centroidi di ogni cluster
+
+
 # per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore
 
 #numero di grafici per ogni reparto, uno per ogni cluster
@@ -12,7 +12,7 @@
 par(mfrow = c(1, 1))
 
 for (deptSelected in deptNumbersSecond) {
-  colors = c("red", "green", "blue", "black", "yellow")
+  colors = c("red", "green", "blue", "black", "yellow","purple")
   
   
   # get the range for the x and y axis
@@ -58,9 +58,9 @@ for (deptSelected in deptNumbersSecond) {
       
       for (colCount in 4:ncol(tempDept)) {
         
-        color <- listYears[[match(yearSelected2, yearList2)]] [[match(deptSelected, deptNumbersSecond)]] [[5]] [[match(deptSelected, deptNumbersSecond)]] [colCount - 3]
-        
-        if(color == clusterSelected){
+        actualCluster <- listYears[[match(yearSelected2, yearList2)]] [[match(deptSelected, deptNumbersSecond)]] [[5]] [[match(deptSelected, deptNumbersSecond)]] [colCount - 3]
+        color <- colCount-3
+        if(actualCluster == clusterSelected){
           tempDept3 <- tempDept2[(as.numeric(as.character(tempDept2$ANNONO))) == yearSelected2,]
           lines(
             tempDept3$SETTIMANANO,
@@ -76,11 +76,4 @@ for (deptSelected in deptNumbersSecond) {
     }
   }
   
-  
-  
-  
-  
 }
-
-
-# per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore

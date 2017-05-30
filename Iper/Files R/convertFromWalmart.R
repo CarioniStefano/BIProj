@@ -443,28 +443,4 @@ for(year in yearList2){
 }
 
 
-
-
-
-# clusterDataframe <- cbind(clusterDataframe,CLUSTER=rep(clusterVector, each=52))
-
-# indice di cluster: lista di k di cluster > cluster assignment colore diverso in base al cluster
-# forme tipiche per dipartimento giocattoli quindi rivelo i cluster dei reparti
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore
- 
-

@@ -8,10 +8,6 @@
 
 
 
-listSkMeans[[3]]$prototypes
-
-
-
 
 
 par(mfrow = c(1, 1))

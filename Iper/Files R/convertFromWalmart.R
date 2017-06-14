@@ -35,10 +35,10 @@ options(scipen = 999)
 
 if(!exists("Estrazione")){
   
-  sheets <- readxl::excel_sheets("~/Lavoro/Iper/Estrazione/Estrazione.xls")
+  sheets <- readxl::excel_sheets("~/Downloads/Estrazione.xls")
   Estrazione <- list()
   for(sheet in sheets){
-    Estrazione <- rbind(Estrazione, readxl::read_excel("~/Lavoro/Iper/Estrazione/Estrazione.xls",col_types = c("text", "text", "text",  "text", "text", "text", "text", "text",
+    Estrazione <- rbind(Estrazione, readxl::read_excel("~/Downloads/Estrazione.xls",col_types = c("text", "text", "text", "text",  "text", "text", "text", "text", "text",
                                                                                                                "numeric", "text", "text", "numeric",   "numeric", "numeric", "numeric",
                                                                                                                "numeric"), sheet = sheet))
   }
@@ -61,8 +61,8 @@ if(!exists("Estrazione")){
 # 6 19754
 # 3 15528
 
-storesNumbers <- c(8, 1 , 7 , 4 , 6 , 9)
-storesNumbersSecond <- c(8, 1 , 7 , 4 , 6 , 9)
+storesNumbers <- c(1 , 4 , 6 , 7 , 8 , 9)
+storesNumbersSecond <- c(1 , 4 , 6 , 7 , 8 , 9)
 # storesNumbers <- c(31,9,29)
 deptNumbers <- c(3,4,6)
 deptNumbersSecond <- c(3,4,6)
@@ -216,7 +216,7 @@ colnames(storeOrderedByWeek) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1",
 
 # ##########################################################RIMOZIONE SETTIMANA 53
 
-# I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PIù ALLA SETTIMANA
+# I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PI? ALLA SETTIMANA
 # QUINDI MEDIO LA SETTIMANA 53 DEL 2015 CON LA SETTIMANA 52 DELLO STESSO ANNO
 
 
@@ -377,7 +377,7 @@ for(year in yearList2){
       # clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
     }
     
-    # print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster è da 2 sta nell index 1, quindi +1
+    # print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster ? da 2 sta nell index 1, quindi +1
     bestClusterNo = (which.max(unlist(listSilhouetteAvgWidth)))
     clusterMatrix = do.call(cbind, listSkMeans)
     # print(clusterMatrix[,bestClusterNo]$cluster)
@@ -428,6 +428,7 @@ clusterDataframe <- cbind(clusterDataframe , storeOrderedByWeek[,4:9])
 
 
 
+
 clusterDataframe <- clusterDataframe[!clusterDataframe$ANNONO == as.numeric("2017"), ]
 
 clusterDataframe <- (clusterDataframe[with(clusterDataframe, order(ANNONO, REPARTO,SETTIMANANO)), ])
@@ -443,5 +444,12 @@ for(year in yearList2){
   }
 }
 
+clusterDepts <- selectedStoreDeptAggregated[which( (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) %in% deptNumbersSecond)),]
+clusterDepts <- clusterDepts [which( (selectedStoreDeptAggregated$ANNONO %in% yearList2)),]
+
+clusterDepts <- clusterDepts[!duplicated(clusterDepts[,c('ENTE','REPARTO','ANNONO')]),c('ENTE','REPARTO','ANNONO')]
+clusterDepts <- cbind(clusterDepts, clusterVector)
+View(clusterDepts)
+# View(clusterDataframe)
 
 # per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore

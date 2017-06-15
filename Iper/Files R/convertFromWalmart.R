@@ -452,4 +452,120 @@ clusterDepts <- cbind(clusterDepts, clusterVector)
 View(clusterDepts)
 # View(clusterDataframe)
 
-# per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore
+# PREDICTION BASE BEST 
+# > min(rmse(error1),rmse(error2),rmse(error3),rmse(error4),rmse(error5),rmse(error6))
+# [1] 13473.87
+# > min(mae(error1),mae(error2),mae(error3),mae(error4),mae(error5),mae(error6))
+# [1] 10040.44
+# > 
+#   > min(mean(abs((error1)/predictionMade$VALORETOT1) * 100), mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
+#         +     mean(abs((error4)/predictionMade$VALORETOT1) * 100), mean(abs((error5)/predictionMade$VALORETOT1) * 100), mean(abs((error6)/predictionMade$VALORETOT1) * 100))
+# [1] 7.180184
+# > 
+#   > getTrainPerf(svmRadialFit1)$TrainRMSE
+# [1] 23278.83
+# > getTrainPerf(svmRadialFit2)$TrainRMSE
+# [1] 20229.93
+# > getTrainPerf(svmRadialFit3)$TrainRMSE
+# [1] 21354.98
+# > 
+#   > getTrainPerf(svmRadialSigmaFit1)$TrainRMSE
+# [1] 21553.12
+# > getTrainPerf(svmRadialSigmaFit2)$TrainRMSE
+# [1] 20261.39
+# > getTrainPerf(svmRadialSigmaFit3)$TrainRMSE
+# [1] 19945.21
+# > 
+#   > min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,getTrainPerf(svmRadialFit3)$TrainRMSE,
+#         +     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
+# [1] 19945.21
+
+
+# PREDICTION 2ND
+# > min(rmse(error1),rmse(error2),rmse(error3),rmse(error4),rmse(error5),rmse(error6))
+# [1] 11994.84
+# > min(mae(error1),mae(error2),mae(error3),mae(error4),mae(error5),mae(error6))
+# [1] 9314.431
+# > 
+#   > min(mean(abs((error1)/predictionMade$VALORETOT1) * 100), mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
+#         +     mean(abs((error4)/predictionMade$VALORETOT1) * 100), mean(abs((error5)/predictionMade$VALORETOT1) * 100), mean(abs((error6)/predictionMade$VALORETOT1) * 100))
+# [1] 8.387398
+# > 
+#   > 
+#   > getTrainPerf(svmRadialFit1)$TrainRMSE
+# [1] 25056.46
+# > getTrainPerf(svmRadialFit2)$TrainRMSE
+# [1] 22423.6
+# > getTrainPerf(svmRadialFit3)$TrainRMSE
+# [1] 22630.64
+# > 
+#   > getTrainPerf(svmRadialSigmaFit1)$TrainRMSE
+# [1] 23311.44
+# > getTrainPerf(svmRadialSigmaFit2)$TrainRMSE
+# [1] 22321.29
+# > getTrainPerf(svmRadialSigmaFit3)$TrainRMSE
+# [1] 22131.48
+# > 
+#   > min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,getTrainPerf(svmRadialFit3)$TrainRMSE,
+#         +     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
+# [1] 22131.48
+
+
+# PREDICTION 3RD
+
+# > min(rmse(error1),rmse(error2),rmse(error3),rmse(error4),rmse(error5),rmse(error6))
+# [1] 12190.94
+# > min(mae(error1),mae(error2),mae(error3),mae(error4),mae(error5),mae(error6))
+# [1] 9436.837
+# > 
+#   > min(mean(abs((error1)/predictionMade$VALORETOT1) * 100), mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
+#         +     mean(abs((error4)/predictionMade$VALORETOT1) * 100), mean(abs((error5)/predictionMade$VALORETOT1) * 100), mean(abs((error6)/predictionMade$VALORETOT1) * 100))
+# [1] 8.452605
+# > 
+#   > 
+#   > getTrainPerf(svmRadialFit1)$TrainRMSE
+# [1] 24240.47
+# > getTrainPerf(svmRadialFit2)$TrainRMSE
+# [1] 21628.48
+# > getTrainPerf(svmRadialFit3)$TrainRMSE
+# [1] 20409.71
+# > 
+#   > getTrainPerf(svmRadialSigmaFit1)$TrainRMSE
+# [1] 17651.93
+# > getTrainPerf(svmRadialSigmaFit2)$TrainRMSE
+# [1] 17432.55
+# > getTrainPerf(svmRadialSigmaFit3)$TrainRMSE
+# [1] 17538.37
+# > 
+#   > min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,getTrainPerf(svmRadialFit3)$TrainRMSE,
+#         +     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
+# [1] 17432.55
+
+# PREDICTION3RDMINUS2ND
+# > min(rmse(error1),rmse(error2),rmse(error3),rmse(error4),rmse(error5),rmse(error6))
+# [1] 14430.88
+# > min(mae(error1),mae(error2),mae(error3),mae(error4),mae(error5),mae(error6))
+# [1] 10674.71
+# > 
+#   > min(mean(abs((error1)/predictionMade$VALORETOT1) * 100), mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
+#         +     mean(abs((error4)/predictionMade$VALORETOT1) * 100), mean(abs((error5)/predictionMade$VALORETOT1) * 100), mean(abs((error6)/predictionMade$VALORETOT1) * 100))
+# [1] 8.373621
+# > 
+#   > 
+#   > getTrainPerf(svmRadialFit1)$TrainRMSE
+# [1] 20642.8
+# > getTrainPerf(svmRadialFit2)$TrainRMSE
+# [1] 19709.92
+# > getTrainPerf(svmRadialFit3)$TrainRMSE
+# [1] 17583.68
+# > 
+#   > getTrainPerf(svmRadialSigmaFit1)$TrainRMSE
+# [1] 17343.66
+# > getTrainPerf(svmRadialSigmaFit2)$TrainRMSE
+# [1] 16333.59
+# > getTrainPerf(svmRadialSigmaFit3)$TrainRMSE
+# [1] 16230.92
+# > 
+#   > min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,getTrainPerf(svmRadialFit3)$TrainRMSE,
+#         +     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
+# [1] 16230.92

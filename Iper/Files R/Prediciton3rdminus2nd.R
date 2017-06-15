@@ -1,4 +1,4 @@
-options(scipen = 999)
+
 # Function that returns Root Mean Squared Error
 rmse <- function(error)
 {
@@ -6,60 +6,52 @@ rmse <- function(error)
 }
 
 # Function that returns Mean Absolute Error
-mae <- function(error)
+mae <- function(error) 
 {
   mean(abs(error))
 }
 
 
+
 library(mlbench)
 library(rpart)
+
+
+
 
 svmInput <- storeOrderedByWeek[,c(1,2,3,4) ]
 svmInput <- svmInput[!svmInput$ANNONO==2017,]
 
 
+svmInput <- cbind(svmInput,NA)
 
-
-
-
-newCol <- data.frame()
 
 for(week in unique(svmInput$SETTIMANANO)) {
-   
-
-  newCol<-rbind(newCol, colMeans(svmInput[which(as.numeric( svmInput$SETTIMANANO ) == week),]) )
-
-}
-
-newCol <- newCol[rep(1:nrow(newCol),each=3),] 
-rowsToDuplicate <- nrow( newCol )
-
-
-
-for(year in ( tail(unique(svmInput$ANNONO) ,-1) )){
-  newCol <- rbind(newCol,newCol[1:rowsToDuplicate,])
-}
-
-
-
-svmInput <- cbind(svmInput,newCol[,4])
+  # print("week")
+  # print(week)
   
-svmInput <- svmInput[,c(2:3,5,4)]
-
-colnames(svmInput) <-c("SETTIMANANO","REPARTO","MEDIASETTIMANA","VALORETOT1")
-
+  for(deptCycle in unique(svmInput$REPARTO)){
+    
+    # print("dept")
+    # print(deptCycle)
+    # print(colMeans(svmInput[which(as.numeric( svmInput$SETTIMANANO ) == week  &  as.numeric(svmInput$REPARTO) == deptCycle  ), ]))
+    # 
+    svmInput[which(as.numeric( svmInput$SETTIMANANO ) == week  &  as.numeric(svmInput$REPARTO) == deptCycle  ), 5] <- colMeans(svmInput[which(as.numeric( svmInput$SETTIMANANO ) == week  &  as.numeric(svmInput$REPARTO) == deptCycle  ), ])[4]
+  }
+}
+View(svmInput)
+colnames(svmInput) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1","MEDIAREPARTO")
+svmInput <- svmInput[,2:ncol(svmInput)]
+svmInput <- svmInput[,c(1,2,4,3)]
 
 predictDataFrame <- svmInput[1:18,]
 predictDataFrame[,4] <- 0
 
+
 train_controlcv <- trainControl(method="cv", number=10)
-train_controlrcv <- trainControl(method="repeatedcv", number=10 , repeats=5)
+train_controlrcv <- trainControl(method="repeatedcv", number=10, repeats=3)
 
 
-
-
-# 
 # svmPolyFit <- train(VALORETOT1 ~ .,
 #                     data = svmInput,
 #                     method = "svmPoly",
@@ -88,7 +80,6 @@ svmRadialSigmaFit2 <- train(VALORETOT1 ~ .,
                             method = "svmRadialSigma",
                             trControl=train_controlcv,
                             tuneLength = 15)
-
 svmRadialSigmaFit3 <- train(VALORETOT1 ~ .,
                             data = svmInput,
                             method = "svmRadialSigma",
@@ -108,6 +99,7 @@ prediction6 <- predict(svmRadialSigmaFit3$finalModel,predictDataFrame[,-4])
 
 
 predictionMade <- storeOrderedByWeek[c(469,470,471 ,472,473,474 ,475,476,477 ,478,479,480 ,481,482,483 ,484,485,486),c(1,2,3,4) ]
+
 predictionMade <- cbind(predictionMade,prediction1,prediction2,prediction3,prediction4,prediction5,prediction6)
 View(predictionMade)
 
@@ -136,3 +128,4 @@ getTrainPerf(svmRadialSigmaFit3)$TrainRMSE
 
 min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,getTrainPerf(svmRadialFit3)$TrainRMSE,
     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
+

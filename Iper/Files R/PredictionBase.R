@@ -23,6 +23,8 @@ predictDataFrame <- svmInput[1:18,]
 predictDataFrame[,3] <- 0
 
 
+
+
 train_controlcv <- trainControl(method="cv", number=10)
 train_controlrcv <- trainControl(method="repeatedcv", number=10, repeats=5)
 # 
@@ -77,7 +79,7 @@ predictionMade <- cbind(predictionMade,prediction1,prediction2,prediction3,predi
 
 View(predictionMade)
 
-error1 <- predictionMade$VALORETOT1 - predictionMade$prediction1
+error1 <-  predictionMade$prediction1 - predictionMade$VALORETOT1 
 error2 <- predictionMade$VALORETOT1 - predictionMade$prediction2
 error3 <- predictionMade$VALORETOT1 - predictionMade$prediction3
 error4 <- predictionMade$VALORETOT1 - predictionMade$prediction4
@@ -88,7 +90,7 @@ error6 <- predictionMade$VALORETOT1 - predictionMade$prediction6
 min(rmse(error1),rmse(error2),rmse(error3),rmse(error4),rmse(error5),rmse(error6))
 min(mae(error1),mae(error2),mae(error3),mae(error4),mae(error5),mae(error6))
 
-min(mean(abs((error1)/predictionMade$VALORETOT1) * 100), mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
+min(, mean(abs((error2)/predictionMade$VALORETOT1) * 100), mean(abs((error3)/predictionMade$VALORETOT1) * 100),
     mean(abs((error4)/predictionMade$VALORETOT1) * 100), mean(abs((error5)/predictionMade$VALORETOT1) * 100), mean(abs((error6)/predictionMade$VALORETOT1) * 100))
 
 getTrainPerf(svmRadialFit1)$TrainRMSE
@@ -103,6 +105,7 @@ min(getTrainPerf(svmRadialFit1)$TrainRMSE,getTrainPerf(svmRadialFit2)$TrainRMSE,
     getTrainPerf(svmRadialSigmaFit1)$TrainRMSE,getTrainPerf(svmRadialSigmaFit2)$TrainRMSE,getTrainPerf(svmRadialSigmaFit3)$TrainRMSE)
 
 
+mean(abs((error1)/predictionMade$VALORETOT1) * 100)
 
 
 # svmInput <- cbind(svmInput,paste(svmInput[,1],paste( "W",formatC(format="d",svmInput[,2] ,flag="0",width=ceiling(log10(max(svmInput[,2])))), sep="" )   ,1,sep="-"))

@@ -39,8 +39,8 @@ if(!exists("Estrazione")){
   Estrazione <- list()
   for(sheet in sheets){
     Estrazione <- rbind(Estrazione, readxl::read_excel("~/Downloads/Estrazione.xls",col_types = c("text", "text", "text", "text",  "text", "text", "text", "text", "text",
-                                                                                                               "numeric", "text", "text", "numeric",   "numeric", "numeric", "numeric",
-                                                                                                               "numeric"), sheet = sheet))
+                                                                                                  "numeric", "text", "text", "numeric",   "numeric", "numeric", "numeric",
+                                                                                                  "numeric"), sheet = sheet))
   }
   
   #View(Estrazione)
@@ -310,9 +310,9 @@ listYears <- list() #CONTIENE LE LISTE DI TUTTI I DIPARTIMNTI DI QUELL'ANNO
 
 
 
-  
-for(year in yearList2){
 
+
+  
   # print("year cycle")
   # print(year)
   
@@ -326,7 +326,7 @@ for(year in yearList2){
     
     # print("dept cycle")
     # print(deptSelected)
-    reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek[which(storeOrderedByWeek$ANNONO==year & storeOrderedByWeek$REPARTO==deptSelected),])
+    reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek[which(storeOrderedByWeek$REPARTO==deptSelected),])
     
     reversedStoreForClusterIper <- reversedStoreOrderedByWeekIper
     
@@ -390,9 +390,9 @@ for(year in yearList2){
     
   }
   
-  listYears[[match(year,yearList2)]] <- listAllDeptYear
+  # listYears[[match(year,yearList2)]] <- listAllDeptYear
   
-}
+
 
 # LISTE YEAR CONTIENE 
 # LIVELLO 1 : I TRE ANNI 2014,2015,2016
@@ -432,14 +432,14 @@ clusterDataframe <- (clusterDataframe[with(clusterDataframe, order(ANNONO, REPAR
 
 clusterVector <- c()
 
-for(year in yearList2){
+
   
   for(deptSelected in deptNumbersSecond){
     
-    clusterVector <- append(clusterVector,listYears[[match(year,yearList2)]][[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]])
+    clusterVector <- append(clusterVector,listAllDeptYear[[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]])
     
   }
-}
+
 
 clusterDepts <- selectedStoreDeptAggregated[which( (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) %in% deptNumbersSecond)),]
 clusterDepts <- clusterDepts [which( (selectedStoreDeptAggregated$ANNONO %in% yearList2)),]

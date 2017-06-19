@@ -37,9 +37,9 @@ for (deptSelected in deptNumbersSecond) {
   # prendere tutti gli anni cambiare match[yearSelecte,yearList due con un operazione vettoriale che prenda tutti gli year in yearlist]
   clusterVectorForGraph <- c()
   
-  for (yearSelected in yearList2) {
-    clusterVectorForGraph<- append(clusterVectorForGraph, listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[5]][[match(deptSelected, deptNumbersSecond)]])
-  }
+  
+    clusterVectorForGraph<- append(clusterVectorForGraph, listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[5]][[match(deptSelected, deptNumbersSecond)]])
+  
   
   
   clusterNo<- unique(clusterVectorForGraph)
@@ -58,7 +58,7 @@ for (deptSelected in deptNumbersSecond) {
       
       for (colCount in 4:ncol(tempDept)) {
         
-        color <- listYears[[match(yearSelected2, yearList2)]] [[match(deptSelected, deptNumbersSecond)]] [[5]] [[match(deptSelected, deptNumbersSecond)]] [colCount - 3]
+        color <- listAllDeptYear [[match(deptSelected, deptNumbersSecond)]] [[5]] [[match(deptSelected, deptNumbersSecond)]] [colCount - 3]
         
         if(color == clusterSelected){
           tempDept3 <- tempDept2[(as.numeric(as.character(tempDept2$ANNONO))) == yearSelected2,]
@@ -67,7 +67,7 @@ for (deptSelected in deptNumbersSecond) {
             tempDept3[, colCount],
             lty = 1,
             lwd = 2,
-            col = colors[color], #+1 perchè indice parte da 1
+            col = colors[color], #+1 perch? indice parte da 1
             pch = pchDot
           )
         }

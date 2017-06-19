@@ -16,7 +16,7 @@ for (deptSelected in deptNumbersSecond) {
   
   
   # get the range for the x and y axis
-  xrange <- range(1, 53)
+  xrange <- range(1, dim (unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes) ))
   yrange <- range(0,1)
   
   linetype <- 1
@@ -35,28 +35,26 @@ for (deptSelected in deptNumbersSecond) {
   clusterVectorForGraph <- c()
   clusterCentroids <- data.frame()
   
-  for (yearSelected in yearList2) {
-    # 
-    clusterVectorForGraph<- append(clusterVectorForGraph, listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[5]][[match(deptSelected, deptNumbersSecond)]])
-    
-    # clusterCentroids<- rbind(clusterCentroids, listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[1]][[match(deptSelected, deptNumbersSecond)]]$prototypes)
-  }
+  
+  # 
+  clusterVectorForGraph<- append(clusterVectorForGraph, listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[5]][[match(deptSelected, deptNumbersSecond)]])
+  
+  # clusterCentroids<- rbind(clusterCentroids, listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[1]][[match(deptSelected, deptNumbersSecond)]]$prototypes)
+  
   
   clusterNo<- unique(clusterVectorForGraph)
   clusterCentroids <- unname(clusterCentroids)
   
-  for (yearSelected in yearList2) {
-    
-    print("ciclo")
-    
-    print(match(yearSelected, yearList2))
-    print(match(deptSelected, deptNumbersSecond))
-    print(max(clusterNo))
-    print(listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
-    clusterCentroids<- rbind(clusterCentroids, unname(listYears[[match(yearSelected, yearList2)]][[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
-  }
   
-  clusterCentroids <- rbind (clusterCentroids, c(1:52))
+  
+  
+  print(match(deptSelected, deptNumbersSecond))
+  print(max(clusterNo))
+  # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
+  clusterCentroids<- rbind(clusterCentroids, unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
+  
+  
+  clusterCentroids <- rbind (clusterCentroids, c(1: dim (unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes) )[2] ))
   
   plot(xrange,
        yrange,
@@ -69,7 +67,7 @@ for (deptSelected in deptNumbersSecond) {
     
     
     
-    for(yearSelected2 in yearList2){
+    
       
       
       
@@ -77,16 +75,16 @@ for (deptSelected in deptNumbersSecond) {
       
       lines(
         clusterCentroids[nrow(clusterCentroids),],
-        clusterCentroids[match(yearSelected, yearList2)*clusterSelected,],
+        clusterCentroids[clusterSelected,],
         lty = 1,
         lwd = 2,
-        col = colors[color], #+1 perchè indice parte da 1
+        col = colors[color], #+1 perch? indice parte da 1
         pch = pchDot
       )
       
       
       
-    }
+    
   }
   
   

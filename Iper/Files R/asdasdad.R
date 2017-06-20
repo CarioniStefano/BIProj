@@ -1,5 +1,6 @@
 library(mlbench)
 library(rpart)
+library(zoo)
 
 # Function that returns Root Mean Squared Error
 rmse <- function(error)
@@ -14,6 +15,30 @@ mae <- function(error)
 }
 
 
+storesNumbersSecond <- c(1 , 4 , 6 , 7 , 8 , 9)
+repartoSelected <- 3
+clusterSelected <- 2
+
+
+entiList <-clusterDepts[which(as.numeric(clusterDepts$REPARTO) == repartoSelected &  as.numeric(clusterDepts$clusterVector) == clusterSelected ),]
+unique(entiList$ENTE)
+svmInput <- storeOrderedByWeek[which(as.numeric(storeOrderedByWeek$REPARTO) == repartoSelected ), c(1,2,3 , 3 + match(as.numeric(unique(entiList$ENTE)),storesNumbersSecond))]
+
+# svmInput <- svmInput[!svmInput$ANNONO==2017,]
+svmInput <- cbind(svmInput,paste(svmInput[,1],paste( "W",formatC(format="d",svmInput[,2] ,flag="0",width=ceiling(log10(max(svmInput[,2])))), sep="" )   ,1,sep="-"))
+testRegex <- svmInput[,ncol(svmInput)]
+svmInput[,ncol(svmInput)]<-ISOweek2date(testRegex)
+colnames(svmInput) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1","VALORETOT2","VALORETOT3","VALORETOT4","VALORETOTO5","DATE")
+z <- read.zoo(svmInput, index = "DATE")
+z$REPARTO <- NULL
+z$ANNONO <- NULL
+
+# svmInput[,5] <- ISOweek2date( paste(testRegex[-grep("\\b\\d{4}-W53", ISOweek(as.Date(ISOweek2date (paste(week_iso,1,sep="-"))) + (0:(length(svmInput[,5])))*7) , perl=TRUE, value=FALSE)], 1, sep="-"))
+
+as.Date(paste("1", 1,  2014, sep = "-"), format = "%w-%W-%Y")
+as.Date(paste("1", 53,  2015, sep = "-"), format = "%w-%W-%Y")
+
+as.Date(paste("1", storeOrderedByWeek$SETTIMANANO,  storeOrderedByWeek$ANNONO, sep = "-"), format = "%w-%W-%Y")
 
 
 svmInput <- storeOrderedByWeek[,c(1,2,3,4) ]

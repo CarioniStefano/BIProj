@@ -16,8 +16,7 @@ for (deptSelected in deptNumbersSecond) {
   
   
   # get the range for the x and y axis
-  xrange <- range(1, dim (unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes) ))
-  yrange <- range(0,1)
+ 
   
   linetype <- 1
   pchDot <- 16
@@ -55,7 +54,8 @@ for (deptSelected in deptNumbersSecond) {
   
   
   clusterCentroids <- rbind (clusterCentroids, c(1: dim (unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes) )[2] ))
-  
+  xrange <- range(1, dim (unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes) ))
+  yrange <- range(0,1)
   plot(xrange,
        yrange,
        type = "n",

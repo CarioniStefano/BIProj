@@ -1,5 +1,5 @@
-# dividere in due grafifi, uno per cluster
-# un altro grafico coi centroidi di ogni cluster
+
+
 # per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore
 
 #numero di grafici per ogni reparto, uno per ogni cluster
@@ -12,7 +12,7 @@
 par(mfrow = c(1, 1))
 
 for (deptSelected in deptNumbersSecond) {
-  colors = c("red", "green", "blue", "black", "yellow")
+  colors = c("red", "green", "blue", "black", "yellow","purple")
   
   
   # get the range for the x and y axis
@@ -43,9 +43,9 @@ for (deptSelected in deptNumbersSecond) {
   
   
   for(clusterSelected in clusterNo){
+    
     print("cluster: ")
     print(clusterSelected)
-    
     
     xrange <- range(1, 53)
     yrange <-
@@ -53,41 +53,35 @@ for (deptSelected in deptNumbersSecond) {
         appoggioDepts[which(as.numeric(as.character(appoggioDepts$REPARTO)) == deptSelected & as.numeric(appoggioDepts$clusterVector) == clusterSelected ) ,4:ncol(appoggioDepts)]
       ))))
     
+    
     plot(xrange,
          yrange,
          type = "n",
          xlab = "WEEKNO",
          ylab = "WeeklySales",main=paste("valori per cluster",clusterSelected , "reparto",deptSelected,sep=" "))
-    
     for(yearSelected2 in yearList2){
       
       for (storeSelected3 in storesNumbersSecond) {
         
         # color <- listAllDeptYear [[match(deptSelected, deptNumbersSecond)]] [[5]] [[match(deptSelected, deptNumbersSecond)]] [colCount - 3]
         
-        color <- clusterSelected
-       
-          tempDept3 <- tempDept2[(as.numeric(as.character(tempDept2$ANNONO))) == yearSelected2,]
-          lines(
-            5:ncol(tempDept3),
-            tempDept3[which(as.numeric(as.character(tempDept3$REPARTO)) == deptSelected  & as.numeric(as.character(tempDept3$ANNONO)) == yearSelected2 & 
-                              as.numeric(tempDept3$clusterVector) == clusterSelected &as.numeric(as.character(tempDept3$ENTE)) == storeSelected3), 5:ncol(tempDept3)],
-            lty = 1,
-            lwd = 2,
-            col = colors[color], #+1 perch? indice parte da 1
-            pch = pchDot
-          )
+        color <- match(storeSelected3,storesNumbersSecond)
+        
+        tempDept3 <- tempDept2[(as.numeric(as.character(tempDept2$ANNONO))) == yearSelected2,]
+        lines(
+          (5:ncol(tempDept3)-4),
+          tempDept3[which(as.numeric(as.character(tempDept3$REPARTO)) == deptSelected  & as.numeric(as.character(tempDept3$ANNONO)) == yearSelected2 & 
+                            as.numeric(tempDept3$clusterVector) == clusterSelected &as.numeric(as.character(tempDept3$ENTE)) == storeSelected3), 5:ncol(tempDept3)],
+          lty = 1,
+          lwd = 2,
+          col = colors[color], #+1 perch? indice parte da 1
+          pch = pchDot
+        )
         
         
       }
     }
+    
   }
-  
-  
-  
-  
-  
 }
 
-
-# per ogni cluster la time series  deve essere colorata per store, se ho 3 cluster lo store deve avere lo stesso colore

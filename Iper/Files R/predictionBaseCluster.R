@@ -5,6 +5,19 @@
 # confornto i prototype con distanza coseno
 # prendo i prototipi dei cluster, calcolo la distanza coseno 
 
+lagpad <- function(x, k) {
+  if (!is.vector(x)) 
+    stop('x must be a vector')
+  if (!is.numeric(x)) 
+    stop('x must be numeric')
+  if (!is.numeric(k))
+    stop('k must be numeric')
+  if (1 != length(k))
+    stop('k must be a single number')
+  c(rep(NA, k), x)[1 : length(x)] 
+}
+
+
 clusterVector2017 <- c()
 for (deptSelected in deptNumbersSecond) {
   
@@ -139,5 +152,51 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
 
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
 appoggioDepts2017 <- appoggioDepts2017[,0:22]
+
+
+assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
+                            as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
+trainingInput <- data.frame()
+for(colNumber in 1:ncol(assa)){
+  trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
+}
+
+cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
+
+
+for (deptSelected in deptNumbersSecond) {
+  clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
+  for(clusterCurrent in clusterList){
+    
+    t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
+                                as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
+  }
+  
+  
+}
+
+MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
+
+MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
+MS.MIData=na.omit(MS.MIData)
+colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
+#fine creazione
+
+#inizio creazione del training set
+trainIndex=1:(nrow(MS.MIData)*0.75)
+training=as.data.frame(MS.MIData[trainIndex])
+rownames(training)=NULL
+#fine creazione del training set
+
+#inizio creazione del test set
+test=as.data.frame(MS.MIData[-trainIndex])
+rownames(test)=NULL
+#fine creazione del test set
+
+bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+preProc=c("center","scale")                #imposta i parametri per il preprocessing
+set.seed(2)                                #setta uno scenario casuale
+indexTrn=ncol(training)                    # ???
+
 
 

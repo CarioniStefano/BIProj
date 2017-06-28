@@ -92,7 +92,8 @@ clusterDataframe2017 <- clusterDataframe2017[clusterDataframe2017$ANNONO == as.n
 clusterDataframe2017 <- (clusterDataframe2017[with(clusterDataframe2017, order(REPARTO, ANNONO , ENTE)), ])
 
 
-
+clusterDataframeAllin <- rbind(clusterDataframe,clusterDataframe2017)
+clusterDataframeAllin <- (clusterDataframeAllin[with(clusterDataframeAllin, order(REPARTO, ANNONO , ENTE)), ])
 
 
 
@@ -105,5 +106,38 @@ clusterDataframe2017 <- (clusterDataframe2017[with(clusterDataframe2017, order(R
 # clusterDepts <- clusterDepts[!duplicated(clusterDepts[,c('REPARTO','ENTE','ANNONO')]),c('REPARTO','ENTE','ANNONO')]
 clusterDepts2017 <- cbind(clusterDataframe2017, clusterVector2017)
 
+
+
 colnames(clusterDepts2017) <- c("REPARTO","ENTE","ANNONO","clusterVector")
 clusterDeptsAllin <- rbind(clusterDepts,clusterDepts2017)
+
+View(clusterDeptsAllin)
+
+appoggioDepts2017 <- data.frame()
+
+
+
+for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
+  
+  for(enteCurrent in storesNumbersSecond){
+    
+    for(annoCurrent in unique(clusterDeptsAllin$ANNONO)){   
+      
+      appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDeptsAllin[which( as.numeric(as.character(clusterDeptsAllin$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDeptsAllin$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDeptsAllin$ENTE)) == as.numeric(enteCurrent)   ),
+                                                               ],
+                                                  t(storeOrderedByWeek[which( as.numeric(storeOrderedByWeek$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek$ANNONO) == as.numeric(annoCurrent) ) ,
+                                                                       (match(enteCurrent,storesNumbersSecond) +3)])) )
+      
+    }
+    
+  }
+  
+  
+  
+}
+
+
+appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
+appoggioDepts2017 <- appoggioDepts2017[,0:22]
+
+

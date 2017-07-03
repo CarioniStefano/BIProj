@@ -48,10 +48,11 @@ for (deptSelected in deptNumbersSecond) {
     print(clusterSelected)
     
     xrange <- range(1, 20)
+
     yrange <-
-      range(c(0, na.omit(max(
+      range(c(0, (max(na.omit(
         appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == deptSelected & as.numeric(appoggioDepts2017$clusterVector) == clusterSelected ) ,4:ncol(appoggioDepts2017)]
-      ))))
+      )))))
     
     
     plot(xrange,
@@ -73,7 +74,7 @@ for (deptSelected in deptNumbersSecond) {
         lines(
           (5:ncol(tempDept3)-4),
           tempDept3[which(as.numeric(as.character(tempDept3$REPARTO)) == deptSelected  & as.numeric(as.character(tempDept3$ANNONO)) == yearSelected2 & 
-                            as.numeric(tempDept3$clusterVector) == clusterSelected &as.numeric(as.character(tempDept3$ENTE)) == storeSelected3), 5:ncol(tempDept3)],
+                            as.numeric(tempDept3$clusterVector) == clusterSelected & as.numeric(as.character(tempDept3$ENTE)) == storeSelected3), 5:ncol(tempDept3)],
           lty = 1,
           lwd = 2,
           col = colors[color], #+1 perch? indice parte da 1

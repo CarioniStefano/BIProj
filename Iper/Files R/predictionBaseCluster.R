@@ -5,21 +5,33 @@
 # confornto i prototype con distanza coseno
 # prendo i prototipi dei cluster, calcolo la distanza coseno 
 
-lagpad <- function(x, k) {
-  if (!is.vector(x)) 
-    stop('x must be a vector')
-  if (!is.numeric(x)) 
-    stop('x must be numeric')
-  if (!is.numeric(k))
-    stop('k must be numeric')
-  if (1 != length(k))
-    stop('k must be a single number')
-  c(rep(NA, k), x)[1 : length(x)] 
+require(zoo)
+
+
+
+shift <- function(x, n, invert=FALSE, default=NA){
+  stopifnot(length(x)>=n)
+  if(n==0){
+    return(x)
+  }
+  n <- ifelse(invert, n*(-1), n)
+  if(n<0){
+    n <- abs(n)
+    forward=FALSE
+  }else{
+    forward=TRUE
+  }
+  if(forward){
+    return(c(rep(default, n), x[seq_len(length(x)-n)]))
+  }
+  if(!forward){
+    return(c(x[seq_len(length(x)-n)+n], rep(default, n)))
+  }
 }
 
 
 clusterVector2017 <- c()
-for (deptSelected in deptNumbersSecond) {
+for (deptSelected in deptNumbersSecond {
   
   
   tempDept <-
@@ -35,6 +47,7 @@ for (deptSelected in deptNumbersSecond) {
   }
   clusterVectorForGraph <- c()
   clusterCentroids <- data.frame()
+  clusterMedoids <- data.frame()
   
   
   # 
@@ -44,7 +57,10 @@ for (deptSelected in deptNumbersSecond) {
   
   
   clusterNo<- unique(clusterVectorForGraph)
+  clusterNo <- sort(clusterNo, decreasing = FALSE)
+  
   clusterCentroids <- unname(clusterCentroids)
+  clusterMedoids <- unname(clusterMedoids)
   
   
   
@@ -52,7 +68,17 @@ for (deptSelected in deptNumbersSecond) {
   # print(match(deptSelected, deptNumbersSecond))
   # print(max(clusterNo))
   # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
+  
+  for(clst in clusterNo){
+    clusterMedoids <- rbind(clusterMedoids, (colMeans(appoggioDepts[which(as.numeric(as.character(appoggioDepts$REPARTO)) == as.numeric(deptSelected) & as.numeric(as.character(appoggioDepts$clusterVector)) == as.numeric(clst)),5:ncol(appoggioDepts)])))
+  }
+  
+  
   clusterCentroids<- rbind(clusterCentroids, unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
+  
+  names(clusterMedoids)<- names(clusterCentroids)
+  
+  clusterMedoids <- clusterMedoids[,0:ncol(reversedStoreForCluster2017)]
   
   clusterCentroids <- clusterCentroids[,0:ncol(reversedStoreForCluster2017)]
   
@@ -60,7 +86,8 @@ for (deptSelected in deptNumbersSecond) {
   
   reversedStoreForCluster2017 <- unname(reversedStoreForCluster2017)
   reversedStoreForCluster2017 <- reversedStoreForCluster2017[(nrow(reversedStoreOrderedByWeek2017)+1):nrow(reversedStoreForCluster2017),]
-  reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterCentroids)
+  # reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterCentroids)
+  reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterMedoids)
   reversedStoreForCluster2017 <- as.matrix(reversedStoreForCluster2017)
   
   
@@ -137,9 +164,9 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
     for(annoCurrent in unique(clusterDeptsAllin$ANNONO)){   
       
       appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDeptsAllin[which( as.numeric(as.character(clusterDeptsAllin$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDeptsAllin$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDeptsAllin$ENTE)) == as.numeric(enteCurrent)   ),
-                                                               ],
-                                                  t(storeOrderedByWeek[which( as.numeric(storeOrderedByWeek$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek$ANNONO) == as.numeric(annoCurrent) ) ,
-                                                                       (match(enteCurrent,storesNumbersSecond) +3)])) )
+                                                                                 ],
+                                                               t(storeOrderedByWeek[which( as.numeric(storeOrderedByWeek$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek$ANNONO) == as.numeric(annoCurrent) ) ,
+                                                                                    (match(enteCurrent,storesNumbersSecond) +3)])) )
       
     }
     
@@ -149,54 +176,93 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
   
 }
 
+clusterCurrent <- 1
 
+View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
-appoggioDepts2017 <- appoggioDepts2017[,0:22]
+# appoggioDepts2017 <- appoggioDepts2017[,0:22]
 
 
 assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-                            as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-trainingInput <- data.frame()
-for(colNumber in 1:ncol(assa)){
-  trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
-}
-
-cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
+                                   as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
 
 
-for (deptSelected in deptNumbersSecond) {
-  clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
-  for(clusterCurrent in clusterList){
-    
-    t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-                                as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-  }
-  
-  
-}
 
-MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
+predictFrame <- (c(as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,7])))))
+predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
+predictData <- predictInput[complete.cases(predictInput),]
+colnames(predictData) <- c("lag1","lag2","nolag")
 
-MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
-MS.MIData=na.omit(MS.MIData)
-colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
-#fine creazione
-
-#inizio creazione del training set
-trainIndex=1:(nrow(MS.MIData)*0.75)
-training=as.data.frame(MS.MIData[trainIndex])
-rownames(training)=NULL
+trainIndex <- 1:(nrow(predictData)-18)
+training <- as.data.frame(predictData[trainIndex,])
+rownames(training) <- NULL
 #fine creazione del training set
 
 #inizio creazione del test set
-test=as.data.frame(MS.MIData[-trainIndex])
-rownames(test)=NULL
+test <- as.data.frame(predictData[-trainIndex,])
+rownames(test) <- NULL
 #fine creazione del test set
 
-bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-preProc=c("center","scale")                #imposta i parametri per il preprocessing
+bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+preProc <- c("center","scale")                #imposta i parametri per il preprocessing
 set.seed(2)                                #setta uno scenario casuale
-indexTrn=ncol(training)                    # ???
+indexTrn <- ncol(training)                    # ???
+
+#creazione del modello di apprendimento
+#
+svmFit=train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl)
+# svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
+svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+predsvm <- predict(svmBest, test[,-ncol(test)])
+actualTS <- test[,ncol(test)]
+predictedTS <- predsvm
+
+rmse( actual=actualTS, predicted=predictedTS )
+mae(actual=actualTS, predicted=predictedTS )
+predictedTS
 
 
-
+# trainingInput <- data.frame()
+# for(colNumber in 1:ncol(assa)){
+#   trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
+# }
+# 
+# cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
+# 
+# 
+# for (deptSelected in deptNumbersSecond) {
+#   clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
+#   for(clusterCurrent in clusterList){
+#     
+#     t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
+#                                 as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
+#   }
+#   
+#   
+# }
+# 
+# MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
+# 
+# MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
+# MS.MIData=na.omit(MS.MIData)
+# colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
+# #fine creazione
+# 
+# #inizio creazione del training set
+# trainIndex=1:(nrow(MS.MIData)*0.75)
+# training=as.data.frame(MS.MIData[trainIndex])
+# rownames(training)=NULL
+# #fine creazione del training set
+# 
+# #inizio creazione del test set
+# test=as.data.frame(MS.MIData[-trainIndex])
+# rownames(test)=NULL
+# #fine creazione del test set
+# 
+# bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+# preProc=c("center","scale")                #imposta i parametri per il preprocessing
+# set.seed(2)                                #setta uno scenario casuale
+# indexTrn=ncol(training)                    # ???
+# 
+# 
+# 

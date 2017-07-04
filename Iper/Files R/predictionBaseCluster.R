@@ -31,7 +31,7 @@ shift <- function(x, n, invert=FALSE, default=NA){
 
 
 clusterVector2017 <- c()
-for (deptSelected in deptNumbersSecond {
+for (deptSelected in deptNumbersSecond) {
   
   
   tempDept <-
@@ -176,7 +176,8 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
   
 }
 
-clusterCurrent <- 1
+clusterCurrent <- 2
+deptSelected <- 6
 
 View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
@@ -187,19 +188,28 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
                                    as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
 
 
-
-predictFrame <- (c(as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,7])))))
+predictData2 <- data.frame()
+for(colAssa in c(1:6)){
+  
+  predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,-1),shift (as.matrix(assa[,colAssa]) ,-2))) )
+}
+colnames(predictData2) <- c("nolag","lag1","lag2")
+testSet <- na.omit(data.frame(na.omit(assa[,7]), shift(na.omit(assa[,7]), -1 ), shift(na.omit(assa[,7]), -2 )))
+# testSet <- rbind(testSet, na.omit(assa[,7]))
+colnames(testSet) <- c("nolag","lag1","lag2")
+predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,7])))))
 predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
 predictData <- predictInput[complete.cases(predictInput),]
-colnames(predictData) <- c("lag1","lag2","nolag")
+colnames(predictData2) <- c("nolag","lag1","lag2")
 
-trainIndex <- 1:(nrow(predictData)-18)
-training <- as.data.frame(predictData[trainIndex,])
+# trainIndex <- 1:(nrow(predictData2))
+training <- predictData2
 rownames(training) <- NULL
 #fine creazione del training set
 
 #inizio creazione del test set
-test <- as.data.frame(predictData[-trainIndex,])
+# test <- as.data.frame(predictData[-trainIndex,])
+test <- testSet
 rownames(test) <- NULL
 #fine creazione del test set
 
@@ -210,16 +220,20 @@ indexTrn <- ncol(training)                    # ???
 
 #creazione del modello di apprendimento
 #
-svmFit=train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl)
+svmFit <- train(training[,-1], training[,1], method="svmRadial", tuneLength=15, trnControl=bootControl)
 # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-predsvm <- predict(svmBest, test[,-ncol(test)])
-actualTS <- test[,ncol(test)]
+predsvm <- predict(svmBest, test[,-1])
+actualTS <- test[,1]
 predictedTS <- predsvm
 
-rmse( actual=actualTS, predicted=predictedTS )
-mae(actual=actualTS, predicted=predictedTS )
-predictedTS
+rmse( actual=actualTS[3:16], predicted=predictedTS[2:15] )
+mae(actual=actualTS[3:16], predicted=predictedTS[2:15] )
+
+cbind(actualTS,predictedTS)
+par(mfrow = c(1, 1))
+plot(actualTS,type="b",col="blue", ylim=c(min(actualTS,predictedTS),max(actualTS,predictedTS)))
+lines(shift(predictedTS,1),type="b",col="red")
 
 
 # trainingInput <- data.frame()

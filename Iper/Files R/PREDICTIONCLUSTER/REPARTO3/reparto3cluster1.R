@@ -177,9 +177,9 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
 }
 
 clusterCurrent <- 1
-deptSelected <- 6
+deptSelected <- 3
 
-View(appoggioDepts2017)
+# View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
 # appoggioDepts2017 <- appoggioDepts2017[,0:22]
 
@@ -189,15 +189,15 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
 
 
 predictData2 <- data.frame()
-for(colAssa in c(1:6)){
+for(colAssa in c(1:15)){
   
   predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,-1),shift (as.matrix(assa[,colAssa]) ,-2))) )
 }
 colnames(predictData2) <- c("nolag","lag1","lag2")
-testSet <- na.omit(data.frame(na.omit(assa[,8]), shift(na.omit(assa[,8]), -1 ), shift(na.omit(assa[,8]), -2 )))
+testSet <- na.omit(data.frame(na.omit(assa[,16]), shift(na.omit(assa[,16]), -1 ), shift(na.omit(assa[,16]), -2 )))
 # testSet <- rbind(testSet, na.omit(assa[,7]))
 colnames(testSet) <- c("nolag","lag1","lag2")
-predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,8])))))
+predictFrame <- (c (as.vector(as.matrix(assa[,(1:15)])) , na.omit(as.vector(as.matrix(assa[,16])))))
 predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
 predictData <- predictInput[complete.cases(predictInput),]
 colnames(predictData2) <- c("nolag","lag1","lag2")

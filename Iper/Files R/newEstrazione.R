@@ -293,3 +293,215 @@ for (currentYear in unique(storeOrderedByWeek2$ANNONO)){
     }
   }
 }
+
+
+
+
+yearList2 <- c(2014,2015,2016)
+par(mfrow = c(3, 1))
+
+# ###############################################.CLUSTERING
+
+
+
+
+
+set.seed(4884)
+
+listYears <- list() #CONTIENE LE LISTE DI TUTTI I DIPARTIMNTI DI QUELL'ANNO
+
+
+
+
+
+
+
+# print("year cycle")
+# print(year)
+
+
+
+listAllDeptYear <- list() #contiene tutte le liste dei dipartimenti per un anno
+
+
+for(deptSelected in deptNumbersSecond){
+  
+  
+  # print("dept cycle")
+  # print(deptSelected)
+  reversedStoreOrderedByWeekIper <- t(storeOrderedByWeek2[which(storeOrderedByWeek2$REPARTO==deptSelected & storeOrderedByWeek2$ANNONO!= 2017),])
+  
+  
+  reversedStoreForClusterIper <- reversedStoreOrderedByWeekIper
+  
+  for(storeNo in storesNumbersSecond){
+    #print((match(storeNo,storesNumbersSecond)))
+    reversedStoreForClusterIper<- rbind(reversedStoreForClusterIper , reversedStoreOrderedByWeekIper[(3+(match(storeNo,storesNumbersSecond))),])
+    
+  }
+  
+  reversedStoreForClusterIper <- reversedStoreForClusterIper[(nrow(reversedStoreOrderedByWeekIper)+1):nrow(reversedStoreForClusterIper),]
+  
+  
+  
+  reversedClusterYears <- matrix(ncol=52)
+  
+  for(year in yearList2){
+    
+    startIndex <- (52*(match(year,yearList2)-1) )
+    
+    endIndex <- (52*(match(year,yearList2)) )
+    # print((startIndex+1) : endIndex)
+    
+    reversedClusterYears <- rbind(reversedClusterYears,reversedStoreForClusterIper[,( (startIndex+1) : endIndex)])
+    
+    
+  }
+  
+  reversedClusterYears <- reversedClusterYears[-1,]
+  # reversedCluster contiene 6 righe per il primo anno, poi 6 righe per il secondo, e sei righe per il terzo
+  
+  cosineDistanceMatrix <- matrix(nrow=nrow(reversedClusterYears),ncol=nrow(reversedClusterYears))
+  
+  for (x in 1:nrow(reversedClusterYears)){
+    
+    for(y in 1: nrow(reversedClusterYears)){
+      
+      cosineDistanceMatrix[x ,y ] <- (1 - ( (reversedClusterYears[x,] %*% reversedClusterYears[y,]) / 
+                                              (sqrt((reversedClusterYears[x,]%*%reversedClusterYears[x,]) * (reversedClusterYears[y,]%*%reversedClusterYears[y,]) ))))
+      
+    }
+  }
+  
+  
+  listSkMeans <- list() #CONTIENE I RISULTATI DELL'SKMEANS PER OGNI TENTATIVO DI CLUSTER
+  listSilhouette <- list() #CONTIENE LA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
+  listSilhouetteAvgWidth <- list() #CONTIENE LA MEDIA DELLA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
+  listBestCluster <- list() #CONTIENE IL MIGLIOR CLUSTER BASATO SUI RISULTATI DELLA SILHOUETTE
+  listMatrixDeptYears <- list() #CONTIENE LA MATRICE DEI CLUSTER PER OGNI REPARTO PER OGNI ANNO
+  
+  
+  for (k in 2:(nrow(reversedClusterYears) -1) ){
+    # print("cluster")
+    # print(k)
+    listSkMeans[[k]] <- skmeans(x = reversedClusterYears, k=k ,control=list(verbose=FALSE))
+    
+    # plot(silhouette(listSkMeans[[k]]))
+    
+    listSilhouette[[k]] <- silhouette(x=listSkMeans[[k]]$cluster, dmatrix = t(cosineDistanceMatrix))
+    
+    # print((summary(listSilhouette[[k]])$avg.width))
+    listSilhouetteAvgWidth[k] <- (summary(listSilhouette[[k]])$avg.width)
+    
+    
+    # clusterResult<-skmeans(x = reversedStoreForCluster, k=k.best,control=list(verbose=FALSE))
+  }
+  
+  # print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster ? da 2 sta nell index 1, quindi +1
+  bestClusterNo = (which.max(unlist(listSilhouetteAvgWidth)))
+  clusterMatrix = do.call(cbind, listSkMeans)
+  print(clusterMatrix[,bestClusterNo]$cluster)
+  
+  
+  
+  listMatrixDeptYears[[(match(deptSelected,deptNumbersSecond))]] <- clusterMatrix    
+  
+  listBestCluster[[match(deptSelected,deptNumbersSecond)]] <- clusterMatrix[,bestClusterNo]$cluster #CONTIENE IL MIGLIOR CLUSTER PER OGNI DEPT PER OGNI ANNO
+  
+  
+  listSummaryDeptYears <-list(listSkMeans,listSilhouette,listSilhouetteAvgWidth, listMatrixDeptYears ,listBestCluster) #CONTIENE LE 5 LISTE PER DIPARTIMENTO PER ANNO
+  
+  listAllDeptYear[[match(deptSelected,deptNumbersSecond)]] <- listSummaryDeptYears
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+# listYears[[match(year,yearList2)]] <- listAllDeptYear
+
+
+
+# LISTE YEAR CONTIENE 
+
+# LIVELLO 1 : I TRE REPARTI 3 , 4, 6
+# LIVELLO 2 : LE 5 LISTE CHE RIASSUMONO IL DIPARTIMENTO
+# LIVELLO 3 : I SOTTOLIVELLI DI OGNI LISTA DESCRITTIVA
+
+
+clusterDataframe <- as.data.frame( selectedStoreDeptAggregated$REPARTO)
+clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$ENTE)
+clusterDataframe <- cbind(clusterDataframe,selectedStoreDeptAggregated$ANNONO)
+
+
+
+clusterDataframe <- unique(clusterDataframe)
+
+
+colnames(clusterDataframe) <- c("REPARTO","ENTE","ANNONO")
+
+
+
+clusterDataframe <- clusterDataframe[!clusterDataframe$ANNONO == as.numeric("2017"), ]
+
+clusterDataframe <- (clusterDataframe[with(clusterDataframe, order(REPARTO, ANNONO , ENTE)), ])
+
+
+
+clusterVector <- c()
+
+
+
+for(deptSelected in deptNumbersSecond){
+  
+  clusterVector <- append(clusterVector,listAllDeptYear[[match(deptSelected,deptNumbersSecond)]][[5]][[match(deptSelected,deptNumbersSecond)]])
+  
+}
+
+
+
+
+
+
+# clusterDepts <- selectedStoreDeptAggregated[which( (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) %in% deptNumbersSecond)),]
+# clusterDepts <- clusterDepts [which( (selectedStoreDeptAggregated$ANNONO %in% yearList2)),]
+# 
+# clusterDepts <- clusterDepts[!duplicated(clusterDepts[,c('REPARTO','ENTE','ANNONO')]),c('REPARTO','ENTE','ANNONO')]
+clusterDepts <- cbind(clusterDataframe, clusterVector)
+appoggioDepts <- data.frame()
+
+
+
+for(repartoCurrent in unique(clusterDepts$REPARTO)){
+  
+  for(enteCurrent in storesNumbersSecond){
+    
+    for(annoCurrent in unique(clusterDepts$ANNONO)){   
+      
+      appoggioDepts <- rbind(appoggioDepts, cbind(clusterDepts[which( as.numeric(as.character(clusterDepts$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDepts$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDepts$ENTE)) == as.numeric(enteCurrent)   ),
+                                                               ],
+                                                  t(storeOrderedByWeek2[which( as.numeric(storeOrderedByWeek2$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek2$ANNONO) == as.numeric(annoCurrent) ) ,
+                                                                       (match(enteCurrent,storesNumbersSecond) +3)])) )
+      
+    }
+    
+  }
+  
+  
+  
+}
+
+
+appoggioDepts <- (appoggioDepts[with(appoggioDepts, order(REPARTO, ANNONO , ENTE)), ])
+
+
+
+
+

@@ -37,7 +37,7 @@ for (deptSelected in deptNumbersSecond) {
   tempDept <-
     appoggioDepts[(as.numeric(as.character(clusterDataframe$REPARTO)) == deptSelected),]
   
-  reversedStoreOrderedByWeek2017 <- t(storeOrderedByWeek[which(storeOrderedByWeek$REPARTO==deptSelected & storeOrderedByWeek$ANNONO== 2017),])
+  reversedStoreOrderedByWeek2017 <- t(storeOrderedByWeek2[which(storeOrderedByWeek2$REPARTO==deptSelected & storeOrderedByWeek2$ANNONO== 2017),])
   reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
   
   for(storeNo in storesNumbersSecond){
@@ -151,7 +151,7 @@ clusterDepts2017 <- cbind(clusterDataframe2017, clusterVector2017)
 colnames(clusterDepts2017) <- c("REPARTO","ENTE","ANNONO","clusterVector")
 clusterDeptsAllin <- rbind(clusterDepts,clusterDepts2017)
 
-View(clusterDeptsAllin)
+# View(clusterDeptsAllin)
 
 appoggioDepts2017 <- data.frame()
 
@@ -165,7 +165,7 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
       
       appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDeptsAllin[which( as.numeric(as.character(clusterDeptsAllin$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDeptsAllin$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDeptsAllin$ENTE)) == as.numeric(enteCurrent)   ),
                                                                                  ],
-                                                               t(storeOrderedByWeek[which( as.numeric(storeOrderedByWeek$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek$ANNONO) == as.numeric(annoCurrent) ) ,
+                                                               t(storeOrderedByWeek2[which( as.numeric(storeOrderedByWeek2$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek2$ANNONO) == as.numeric(annoCurrent) ) ,
                                                                                     (match(enteCurrent,storesNumbersSecond) +3)])) )
       
     }
@@ -176,10 +176,10 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
   
 }
 
-clusterCurrent <- 1
+clusterCurrent <- 2
 deptSelected <- 6
 
-View(appoggioDepts2017)
+# View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
 # appoggioDepts2017 <- appoggioDepts2017[,0:22]
 
@@ -188,29 +188,48 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
                                    as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
 
 
-predictData2 <- data.frame()
+predictData2 <- data.frame(1:19)
+
+
 for(colAssa in c(1:6)){
   
-  predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,-1),shift (as.matrix(assa[,colAssa]) ,-2))) )
+  predictData2<- cbind(predictData2, as.matrix(assa[1:19,colAssa])  )
+
 }
-colnames(predictData2) <- c("nolag","lag1","lag2")
-testSet <- na.omit(data.frame(na.omit(assa[,10]), shift(na.omit(assa[,10]), -1 ), shift(na.omit(assa[,10]), -2 )))
-# testSet <- rbind(testSet, na.omit(assa[,7]))
-colnames(testSet) <- c("nolag","lag1","lag2")
-predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,10])))))
-predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
-predictData <- predictInput[complete.cases(predictInput),]
-colnames(predictData2) <- c("nolag","lag1","lag2")
+
+predictData2 <- t(predictData2[,-1])
+
+# colnames(predictData2) <- c("nolag","lag1","lag2")
+
+test <- t(na.omit(data.frame(assa[1:19,7])))
+
+test <- rbind(test,t(na.omit(data.frame(assa[1:19,8]))))
+
+
+test <- rbind(test,t(na.omit(data.frame(assa[1:19,9]))))
+
+test <- rbind(test,t(na.omit(data.frame(assa[1:19,10]))))
+
+test <- rbind(test,t(na.omit(data.frame(assa[1:19,11]))))
+test <- rbind(test,t(na.omit(data.frame(assa[1:19,12]))))
+
+
+# predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,9])))))
+# predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
+# predictData <- predictInput[complete.cases(predictInput),]
+# colnames(predictData2) <- c("nolag","lag1","lag2")
 
 # trainIndex <- 1:(nrow(predictData2))
 training <- predictData2
 rownames(training) <- NULL
+colnames(training) <- NULL
 #fine creazione del training set
 
 #inizio creazione del test set
 # test <- as.data.frame(predictData[-trainIndex,])
-test <- testSet
+
 rownames(test) <- NULL
+colnames(test) <- NULL
 #fine creazione del test set
 
 bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
@@ -220,63 +239,89 @@ indexTrn <- ncol(training)                    # ???
 
 #creazione del modello di apprendimento
 #
-svmFit <- train(training[,-1], training[,1], method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
 # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-predsvm <- predict(svmBest, test[,-1])
-actualTS <- test[,1]
+predsvm <- predict(svmBest, test[,-ncol(test)])
+actualTS <- test[,ncol(test)]
 predictedTS <- predsvm
 
-rmse( actual=actualTS[3:16], predicted=predictedTS[2:15] )
-mae(actual=actualTS[3:16], predicted=predictedTS[2:15] )
+
+test[,ncol(test)] <- predictedTS
+test <- cbind(test,0)
 
 cbind(actualTS,predictedTS)
 par(mfrow = c(1, 1))
-plot(actualTS,type="b",col="blue", ylim=c(min(actualTS,predictedTS),max(actualTS,predictedTS)))
-lines(shift(predictedTS,1),type="b",col="red")
 
 
-# trainingInput <- data.frame()
-# for(colNumber in 1:ncol(assa)){
-#   trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
-# }
-# 
-# cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
-# 
-# 
-# for (deptSelected in deptNumbersSecond) {
-#   clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
-#   for(clusterCurrent in clusterList){
-#     
-#     t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-#                                 as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-#   }
-#   
-#   
-# }
-# 
-# MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
-# 
-# MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
-# MS.MIData=na.omit(MS.MIData)
-# colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
-# #fine creazione
-# 
-# #inizio creazione del training set
-# trainIndex=1:(nrow(MS.MIData)*0.75)
-# training=as.data.frame(MS.MIData[trainIndex])
-# rownames(training)=NULL
-# #fine creazione del training set
-# 
-# #inizio creazione del test set
-# test=as.data.frame(MS.MIData[-trainIndex])
-# rownames(test)=NULL
-# #fine creazione del test set
-# 
-# bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-# preProc=c("center","scale")                #imposta i parametri per il preprocessing
-# set.seed(2)                                #setta uno scenario casuale
-# indexTrn=ncol(training)                    # ???
-# 
-# 
-# 
+predictData2 <- data.frame(1:20)
+
+
+for(colAssa in c(1:6)){
+  
+  predictData2<- cbind(predictData2, as.matrix(assa[1:20,colAssa])  )
+  
+}
+
+predictData2 <- t(predictData2[,-1])
+
+training <- predictData2
+
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+predsvm <- predict(svmBest, test[,-ncol(test)])
+
+predictedTS <- predsvm
+
+
+
+test[,ncol(test)] <- predictedTS
+test <- cbind(test,0)
+
+
+predictData2 <- data.frame(1:21)
+
+
+for(colAssa in c(1:6)){
+  
+  predictData2<- cbind(predictData2, as.matrix(assa[1:21,colAssa])  )
+  
+}
+
+predictData2 <- t(predictData2[,-1])
+
+training <- predictData2
+
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+predsvm <- predict(svmBest, test[,-ncol(test)])
+predictedTS <- predsvm
+
+test[,ncol(test)] <- predictedTS
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,7])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,8])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,9])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,10])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,11])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:21,12])) ) ) 
+
+
+plot(test[1,],type="b",col="blue", ylim=c(min(test[1,],test[7,]),max(test[1,],test[7,])))
+lines(test[7,],type="b",col="red")
+
+plot(test[2,],type="b",col="blue", ylim=c(min(test[2,],test[8,]),max(test[2,],test[8,])))
+lines(test[8,],type="b",col="red")
+
+plot(test[3,],type="b",col="blue", ylim=c(min(test[3,],test[9,]),max(test[3,],test[9,])))
+lines(test[9,],type="b",col="red")
+
+plot(test[4,],type="b",col="blue", ylim=c(min(test[4,],test[10,]),max(test[4,],test[10,])))
+lines(test[10,],type="b",col="red")
+
+plot(test[5,],type="b",col="blue", ylim=c(min(test[5,],test[11,]),max(test[5,],test[11,])))
+lines(test[11,],type="b",col="red")
+
+plot(test[6,],type="b",col="blue", ylim=c(min(test[6,],test[12,]),max(test[6,],test[12,])))
+lines(test[12,],type="b",col="red")
+
+

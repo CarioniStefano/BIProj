@@ -20,7 +20,7 @@ library(rpart)
 
 
 svmInput3 <- storeOrderedByWeek[,c(1,2,3,4) ]
-svmInput3 <- svmInput3[!svmInput3$ANNONO==2017,]
+# svmInput3 <- svmInput3[!svmInput3$ANNONO==2017,]
 svmInput3 <- cbind(svmInput3,NA)
 
 svmInput4 <- storeOrderedByWeek[,c(1,2,3,5) ]
@@ -47,7 +47,7 @@ colnames(svmInput3) <- c("ANNONO","SETTIMANANO","REPARTO","VALORETOT1","MEDIAREP
 svmInput3 <- svmInput3[,2:ncol(svmInput3)]
 svmInput3 <- svmInput3[,c(1,2,4,3)]
 
-predictDataFrame3 <- svmInput3[1:45,]
+predictDataFrame3 <- svmInput3[c(57,60,63),]
 predictDataFrame3[,4] <- 0
 
 
@@ -95,66 +95,66 @@ svmRadialFit33rd <- train(VALORETOT1 ~ .,
                        method = "svmRadial",
                        tuneLength = 15 , trControl=train_controlrcv)
 
-svmRadialSigmaFit13rd <- train(VALORETOT1 ~ .,
-                            data = svmInput3,
-                            method = "svmRadialSigma",
-                            tuneLength = 15)
-svmRadialSigmaFit23rd <- train(VALORETOT1 ~ .,
-                            data = svmInput3,
-                            method = "svmRadialSigma",
-                            trControl=train_controlcv,
-                            tuneLength = 15)
-svmRadialSigmaFit33rd <- train(VALORETOT1 ~ .,
-                            data = svmInput3,
-                            method = "svmRadialSigma",
-                            trControl=train_controlrcv,
-                            tuneLength = 15)
+# svmRadialSigmaFit13rd <- train(VALORETOT1 ~ .,
+#                             data = svmInput3,
+#                             method = "svmRadialSigma",
+#                             tuneLength = 15)
+# svmRadialSigmaFit23rd <- train(VALORETOT1 ~ .,
+#                             data = svmInput3,
+#                             method = "svmRadialSigma",
+#                             trControl=train_controlcv,
+#                             tuneLength = 15)
+# svmRadialSigmaFit33rd <- train(VALORETOT1 ~ .,
+#                             data = svmInput3,
+#                             method = "svmRadialSigma",
+#                             trControl=train_controlrcv,
+#                             tuneLength = 15)
 
 
 
-svmRadialFit14th <- train(VALORETOT2 ~ .,
-                       data = svmInput4,
-                       method = "svmRadial",
-                       tuneLength = 15 )
-
-svmRadialFit24th <- train(VALORETOT2 ~ .,
-                       data = svmInput4,
-                       method = "svmRadial",
-                       tuneLength = 15 , trControl=train_controlcv)
-svmRadialFit34th <- train(VALORETOT2 ~ .,
-                       data = svmInput4,
-                       method = "svmRadial",
-                       tuneLength = 15 , trControl=train_controlrcv)
-
-svmRadialSigmaFit14th <- train(VALORETOT2 ~ .,
-                            data = svmInput4,
-                            method = "svmRadialSigma",
-                            tuneLength = 15)
-svmRadialSigmaFit24th <- train(VALORETOT2 ~ .,
-                            data = svmInput4,
-                            method = "svmRadialSigma",
-                            trControl=train_controlcv,
-                            tuneLength = 15)
-svmRadialSigmaFit34th <- train(VALORETOT2 ~ .,
-                            data = svmInput4,
-                            method = "svmRadialSigma",
-                            trControl=train_controlrcv,
-                            tuneLength = 15)
+# svmRadialFit14th <- train(VALORETOT2 ~ .,
+#                        data = svmInput4,
+#                        method = "svmRadial",
+#                        tuneLength = 15 )
+# 
+# svmRadialFit24th <- train(VALORETOT2 ~ .,
+#                        data = svmInput4,
+#                        method = "svmRadial",
+#                        tuneLength = 15 , trControl=train_controlcv)
+# svmRadialFit34th <- train(VALORETOT2 ~ .,
+#                        data = svmInput4,
+#                        method = "svmRadial",
+#                        tuneLength = 15 , trControl=train_controlrcv)
+# 
+# svmRadialSigmaFit14th <- train(VALORETOT2 ~ .,
+#                             data = svmInput4,
+#                             method = "svmRadialSigma",
+#                             tuneLength = 15)
+# svmRadialSigmaFit24th <- train(VALORETOT2 ~ .,
+#                             data = svmInput4,
+#                             method = "svmRadialSigma",
+#                             trControl=train_controlcv,
+#                             tuneLength = 15)
+# svmRadialSigmaFit34th <- train(VALORETOT2 ~ .,
+#                             data = svmInput4,
+#                             method = "svmRadialSigma",
+#                             trControl=train_controlrcv,
+#                             tuneLength = 15)
 
 
 prediction13rd <- predict(svmRadialFit13rd$finalModel,predictDataFrame3[,-4])
 prediction23rd <- predict(svmRadialFit23rd$finalModel,predictDataFrame3[,-4])
 prediction33rd <- predict(svmRadialFit33rd$finalModel,predictDataFrame3[,-4])
-prediction43rd <- predict(svmRadialSigmaFit13rd$finalModel,predictDataFrame3[,-4])
-prediction53rd <- predict(svmRadialSigmaFit23rd$finalModel,predictDataFrame3[,-4])
-prediction63rd <- predict(svmRadialSigmaFit33rd$finalModel,predictDataFrame3[,-4])
-
-prediction14th <- predict(svmRadialFit14th$finalModel,predictDataFrame4[,-4])
-prediction24th <- predict(svmRadialFit24th$finalModel,predictDataFrame4[,-4])
-prediction34th <- predict(svmRadialFit34th$finalModel,predictDataFrame4[,-4])
-prediction44th <- predict(svmRadialSigmaFit14th$finalModel,predictDataFrame4[,-4])
-prediction54th <- predict(svmRadialSigmaFit24th$finalModel,predictDataFrame4[,-4])
-prediction64th <- predict(svmRadialSigmaFit34th$finalModel,predictDataFrame4[,-4])
+# prediction43rd <- predict(svmRadialSigmaFit13rd$finalModel,predictDataFrame3[,-4])
+# prediction53rd <- predict(svmRadialSigmaFit23rd$finalModel,predictDataFrame3[,-4])
+# prediction63rd <- predict(svmRadialSigmaFit33rd$finalModel,predictDataFrame3[,-4])
+# 
+# prediction14th <- predict(svmRadialFit14th$finalModel,predictDataFrame4[,-4])
+# prediction24th <- predict(svmRadialFit24th$finalModel,predictDataFrame4[,-4])
+# prediction34th <- predict(svmRadialFit34th$finalModel,predictDataFrame4[,-4])
+# prediction44th <- predict(svmRadialSigmaFit14th$finalModel,predictDataFrame4[,-4])
+# prediction54th <- predict(svmRadialSigmaFit24th$finalModel,predictDataFrame4[,-4])
+# prediction64th <- predict(svmRadialSigmaFit34th$finalModel,predictDataFrame4[,-4])
 
 
 
@@ -162,11 +162,11 @@ prediction64th <- predict(svmRadialSigmaFit34th$finalModel,predictDataFrame4[,-4
 
 predictionMade3rd <- storeOrderedByWeek[469:513,c(1,2,3,4) ]
 
-predictionMade3rd <- cbind(predictionMade3rd,prediction13rd,prediction23rd,prediction33rd,prediction43rd,prediction53rd,prediction63rd)
+predictionMade3rd <- cbind(predictionMade3rd,prediction13rd,prediction23rd,prediction33rd)
 
-predictionMade3rd <- cbind(predictionMade3rd, storeOrderedByWeek[469:513, 5 ])
-
-predictionMade3rd <- cbind(predictionMade3rd,prediction14th,prediction24th,prediction34th,prediction44th,prediction54th,prediction64th)
+# predictionMade3rd <- cbind(predictionMade3rd, storeOrderedByWeek[469:513, 5 ])
+# 
+# predictionMade3rd <- cbind(predictionMade3rd,prediction14th,prediction24th,prediction34th,prediction44th,prediction54th,prediction64th)
 
 View(predictionMade3rd)
 

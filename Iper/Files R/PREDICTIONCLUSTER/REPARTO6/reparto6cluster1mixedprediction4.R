@@ -37,7 +37,7 @@ for (deptSelected in deptNumbersSecond) {
   tempDept <-
     appoggioDepts[(as.numeric(as.character(clusterDataframe$REPARTO)) == deptSelected),]
   
-  reversedStoreOrderedByWeek2017 <- t(storeOrderedByWeek[which(storeOrderedByWeek$REPARTO==deptSelected & storeOrderedByWeek$ANNONO== 2017),])
+  reversedStoreOrderedByWeek2017 <- t(storeOrderedByWeek2[which(storeOrderedByWeek2$REPARTO==deptSelected & storeOrderedByWeek2$ANNONO== 2017),])
   reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
   
   for(storeNo in storesNumbersSecond){
@@ -165,8 +165,8 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
       
       appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDeptsAllin[which( as.numeric(as.character(clusterDeptsAllin$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDeptsAllin$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDeptsAllin$ENTE)) == as.numeric(enteCurrent)   ),
                                                                                  ],
-                                                               t(storeOrderedByWeek[which( as.numeric(storeOrderedByWeek$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek$ANNONO) == as.numeric(annoCurrent) ) ,
-                                                                                    (match(enteCurrent,storesNumbersSecond) +3)])) )
+                                                               t(storeOrderedByWeek2[which( as.numeric(storeOrderedByWeek2$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek2$ANNONO) == as.numeric(annoCurrent) ) ,
+                                                                                     (match(enteCurrent,storesNumbersSecond) +3)])) )
       
     }
     
@@ -176,10 +176,10 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
   
 }
 
-clusterCurrent <- 1
+clusterCurrent <- 2
 deptSelected <- 6
 
-View(appoggioDepts2017)
+# View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
 # appoggioDepts2017 <- appoggioDepts2017[,0:22]
 
@@ -191,16 +191,39 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
 predictData2 <- data.frame()
 for(colAssa in c(1:6)){
   
-  predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,-1),shift (as.matrix(assa[,colAssa]) ,-2))) )
+  predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,1),shift (as.matrix(assa[,colAssa]) ,2) , shift (as.matrix(assa[,colAssa]) ,3) )) )
+  
 }
+
 colnames(predictData2) <- c("nolag","lag1","lag2")
-testSet <- na.omit(data.frame(na.omit(assa[,10]), shift(na.omit(assa[,10]), -1 ), shift(na.omit(assa[,10]), -2 )))
+
+testSet <- na.omit(data.frame(na.omit(assa[1:21,10]), shift(na.omit(assa[1:21,10]), 1 ), shift(na.omit(assa[1:21,10]), 2 ), shift(na.omit(assa[1:21,10]), 3 ) ))
+testSet <- testSet[nrow(testSet),]
+
+
+xals <- data.frame( testTemp[4,22] ,  (testTemp[4,21]), (testTemp[4,20]) , (testTemp[4,19]) )
+colnames(testSet) <- c("nolag","lag1","lag2","lag3")
+colnames(xals) <- colnames(testSet)
+testSet <- rbind(testSet ,  xals)
+
+xals <- data.frame( testTemp[4,23] ,  (testTemp[4,22]), (testTemp[4,21]) , (testTemp[4,20]) )
+
+colnames(xals) <- colnames(testSet)
+testSet <- rbind(testSet ,  xals)
+
+xals <- data.frame( testTemp[4,24] ,  (testTemp[4,23]), (testTemp[4,23]) , (testTemp[4,21]) )
+
+colnames(xals) <- colnames(testSet)
+testSet <- rbind(testSet ,  xals)
+
+
+
 # testSet <- rbind(testSet, na.omit(assa[,7]))
-colnames(testSet) <- c("nolag","lag1","lag2")
-predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,10])))))
-predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
-predictData <- predictInput[complete.cases(predictInput),]
-colnames(predictData2) <- c("nolag","lag1","lag2")
+
+# predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,8])))))
+# predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
+# predictData <- predictInput[complete.cases(predictInput),]
+# colnames(predictData2) <- c("nolag","lag1","lag2")
 
 # trainIndex <- 1:(nrow(predictData2))
 training <- predictData2
@@ -227,56 +250,17 @@ predsvm <- predict(svmBest, test[,-1])
 actualTS <- test[,1]
 predictedTS <- predsvm
 
+# c(testTemp[8,0:(ncol(testTemp)-3)], predsvm[3:4])
+
+plot(testTemp[4,],type="b",col="blue", ylim=c(0,max(testTemp[4,],testTemp[10,])))
+lines(testTemp[10,],type="b",col="red")
+lines(c(testTemp[10,0:(ncol(testTemp)-3)], predsvm[3:4]),type="b",col="green")
+legend('bottomleft', c("modello settimane","valore reale","mixed") , 
+       lty=1, col=c('blue', 'red', 'green'), bty='n')
 rmse( actual=actualTS[3:16], predicted=predictedTS[2:15] )
 mae(actual=actualTS[3:16], predicted=predictedTS[2:15] )
 
 cbind(actualTS,predictedTS)
 par(mfrow = c(1, 1))
-plot(actualTS,type="b",col="blue", ylim=c(min(actualTS,predictedTS),max(actualTS,predictedTS)))
-lines(shift(predictedTS,1),type="b",col="red")
 
 
-# trainingInput <- data.frame()
-# for(colNumber in 1:ncol(assa)){
-#   trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
-# }
-# 
-# cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
-# 
-# 
-# for (deptSelected in deptNumbersSecond) {
-#   clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
-#   for(clusterCurrent in clusterList){
-#     
-#     t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-#                                 as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-#   }
-#   
-#   
-# }
-# 
-# MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
-# 
-# MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
-# MS.MIData=na.omit(MS.MIData)
-# colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
-# #fine creazione
-# 
-# #inizio creazione del training set
-# trainIndex=1:(nrow(MS.MIData)*0.75)
-# training=as.data.frame(MS.MIData[trainIndex])
-# rownames(training)=NULL
-# #fine creazione del training set
-# 
-# #inizio creazione del test set
-# test=as.data.frame(MS.MIData[-trainIndex])
-# rownames(test)=NULL
-# #fine creazione del test set
-# 
-# bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-# preProc=c("center","scale")                #imposta i parametri per il preprocessing
-# set.seed(2)                                #setta uno scenario casuale
-# indexTrn=ncol(training)                    # ???
-# 
-# 
-# 

@@ -191,13 +191,44 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
 predictData2 <- data.frame()
 for(colAssa in c(1:6)){
   
-  predictData2<- rbind(predictData2, na.omit(cbind( as.matrix(assa[,colAssa]), shift (as.matrix(assa[,colAssa]) ,-1),shift (as.matrix(assa[,colAssa]) ,-2))) )
+  coll <-na.omit(((na.omit(cbind( as.matrix(assa[,colAssa]) ) ) - min(na.omit(cbind( as.matrix(assa[,colAssa]) ) )))) /( max(na.omit(cbind( as.matrix(assa[,colAssa]) ) )) - min(na.omit(cbind( as.matrix(assa[,colAssa]) ) ))))
+  
+  predictData2<- rbind(predictData2, na.omit(cbind (coll, shift (as.matrix(coll) ,1) , shift (as.matrix(coll) ,2) , shift (as.matrix(coll) ,3), 
+                                                    shift (as.matrix(coll) ,4), shift (as.matrix(coll) ,5)
+                                                    ,shift (as.matrix(coll) ,6), shift (as.matrix(coll) ,7) )  ) )
 }
-colnames(predictData2) <- c("nolag","lag1","lag2")
-testSet <- na.omit(data.frame(na.omit(assa[,10]), shift(na.omit(assa[,10]), -1 ), shift(na.omit(assa[,10]), -2 )))
+
+# plot(predictData2[1:52,],type="b",col="blue") 
+# lines(predictData2[53:104,],type="b",col="red")
+# lines(predictData2[105:156,],type="b",col="green")
+ # lines(predictData2[157:208,],type="b",col="purple")
+ lines(standardizzata,type="b",col="black")
+# colnames(predictData2) <- c("nolag","lag1","lag2")
+standardizzata  <-  (na.omit(assa[,9]) - min(na.omit(assa[,9])))/ (max(na.omit(assa[,9])) -min(na.omit(assa[,9])))
+testSet <- na.omit(data.frame(standardizzata, shift(standardizzata, 1 ), shift(standardizzata, 2 ), 
+                              shift(standardizzata, 3 ) ,shift(standardizzata, 4 ), shift(standardizzata, 5 ), shift(standardizzata, 6 ), shift(standardizzata, 7 ) ))
+test <- testSet
+# predictData2 <- rbind(predictData2,test)
+
+# predictData2 <- data.frame(a = c(predictData2[,1], test[,1]))
+
+# timeseries1<-ts(predictData2,frequency = 52)
+# xreg<-ts(rbind(training[,-1] ),frequency = 47)
+# xreg2<-ts(rbind(test[,-1] ),frequency = 47)
+# modArima <- auto.arima(timeseries1 ,seasonal = TRUE)
+
+
+# tsdisplay(residuals(modArima),  main='(1,1,1) Model Residuals')
+# 
+# Acast<-forecast(modArima, h=3)
+# 
+# accuracy(Acast$mean,test[,1])
+
+
+
 # testSet <- rbind(testSet, na.omit(assa[,7]))
 colnames(testSet) <- c("nolag","lag1","lag2")
-predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,10])))))
+predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,11])))))
 predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
 predictData <- predictInput[complete.cases(predictInput),]
 colnames(predictData2) <- c("nolag","lag1","lag2")
@@ -209,7 +240,7 @@ rownames(training) <- NULL
 
 #inizio creazione del test set
 # test <- as.data.frame(predictData[-trainIndex,])
-test <- testSet
+
 rownames(test) <- NULL
 #fine creazione del test set
 
@@ -234,49 +265,3 @@ cbind(actualTS,predictedTS)
 par(mfrow = c(1, 1))
 plot(actualTS,type="b",col="blue", ylim=c(min(actualTS,predictedTS),max(actualTS,predictedTS)))
 lines(shift(predictedTS,1),type="b",col="red")
-
-
-# trainingInput <- data.frame()
-# for(colNumber in 1:ncol(assa)){
-#   trainingInput <-rbind(trainingInput,cbind(assa[,colNumber],lagpad(assa[,colNumber],1),lagpad(assa[,colNumber],2)))
-# }
-# 
-# cbind(assa[,1],lagpad(assa[,1],1),lagpad(assa[,1],2))
-# 
-# 
-# for (deptSelected in deptNumbersSecond) {
-#   clusterList <- unique(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected)),]$clusterVector)
-#   for(clusterCurrent in clusterList){
-#     
-#     t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-#                                 as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-#   }
-#   
-#   
-# }
-# 
-# MS.MIInput=merge(lag(MS.MIcut.z,1),lag(MS.MIcut.z,2),lag(MS.MIcut.z,3),lag(MS.MIcut.z,4),lag(MS.MIcut.z,5),lag(MS.MI.z,6),all=FALSE)
-# 
-# MS.MIData=merge(MS.MIInput,MS.MIcut.z,all=FALSE)
-# MS.MIData=na.omit(MS.MIData)
-# colnames(MS.MIData)=c("lag1","lag2","lag3","lag4","lag5","lag6","TARGET")
-# #fine creazione
-# 
-# #inizio creazione del training set
-# trainIndex=1:(nrow(MS.MIData)*0.75)
-# training=as.data.frame(MS.MIData[trainIndex])
-# rownames(training)=NULL
-# #fine creazione del training set
-# 
-# #inizio creazione del test set
-# test=as.data.frame(MS.MIData[-trainIndex])
-# rownames(test)=NULL
-# #fine creazione del test set
-# 
-# bootControl=trainControl(number=100)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-# preProc=c("center","scale")                #imposta i parametri per il preprocessing
-# set.seed(2)                                #setta uno scenario casuale
-# indexTrn=ncol(training)                    # ???
-# 
-# 
-# 

@@ -177,7 +177,7 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
 }
 
 clusterCurrent <- 2
-deptSelected <- 6
+deptSelected <- 3
 
 # View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
@@ -191,7 +191,7 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
 predictData2 <- data.frame(1:22)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:3)){
   
   predictData2<- cbind(predictData2, as.matrix(assa[1:22,colAssa])  )
 
@@ -201,17 +201,12 @@ predictData2 <- t(predictData2[,-1])
 
 # colnames(predictData2) <- c("nolag","lag1","lag2")
 
-test <- t(na.omit(data.frame(assa[1:22,7])))
+test <- t(na.omit(data.frame(assa[1:22,4])))
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,8]))))
+test <- rbind(test,t(na.omit(data.frame(assa[1:22,5]))))
 
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,9]))))
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,10]))))
-
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,11]))))
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,12]))))
 
 
 # predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,9])))))
@@ -239,7 +234,9 @@ indexTrn <- ncol(training)                    # ???
 
 #creazione del modello di apprendimento
 #
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=30, trnControl=bootControl)
+
 # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
@@ -257,7 +254,7 @@ par(mfrow = c(1, 1))
 predictData2 <- data.frame(1:23)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:3)){
   
   predictData2<- cbind(predictData2, as.matrix(assa[1:23,colAssa])  )
   
@@ -267,7 +264,7 @@ predictData2 <- t(predictData2[,-1])
 
 training <- predictData2
 
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=30, trnControl=bootControl)
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
 
@@ -282,7 +279,7 @@ test <- cbind(test,0)
 predictData2 <- data.frame(1:24)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:3)){
   
   predictData2<- cbind(predictData2, as.matrix(assa[1:24,colAssa])  )
   
@@ -292,43 +289,34 @@ predictData2 <- t(predictData2[,-1])
 
 training <- predictData2
 
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=30, trnControl=bootControl)
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
 predictedTS <- predsvm
 
 test[,ncol(test)] <- predictedTS
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,7])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,8])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,9])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,10])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,11])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,12])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,4])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,5])) ) ) 
+
+ 
+rmse(actual = test[3,22:(ncol(test)-1)], predicted = test[1,22:(ncol(test)-1)] )
+rmse(actual = test[4,22:(ncol(test)-1)], predicted = test[2,22:(ncol(test)-1)] )
+totBef <- mean(abs(test[3,22]-test[1,22])/(test[3,22]),abs(test[3,23]-test[1,23])/(test[3,23]))+mean(abs(test[4,22]-test[2,22])/(test[4,22]),abs(test[4,23]-test[2,23])/(test[4,23]))
+
+mean(rowMeans(abs((test[3:4,22:23]-test[1:2,22:23])/test[3:4,22:23])*100))
 
 
-rmse(actual = test[7,22:(ncol(test)-1)], predicted = test[1,22:(ncol(test)-1)] )
-rmse(actual = test[8,22:(ncol(test)-1)], predicted = test[2,22:(ncol(test)-1)] )
-rmse(actual = test[9,22:(ncol(test)-1)], predicted = test[3,22:(ncol(test)-1)] )
-rmse(actual = test[10,22:(ncol(test)-1)], predicted = test[4,22:(ncol(test)-1)] )
-rmse(actual = test[11,22:(ncol(test)-1)], predicted = test[5,22:(ncol(test)-1)] )
-rmse(actual = test[12,22:(ncol(test)-1)], predicted = test[6,22:(ncol(test)-1)] )
+plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[3,])))
+lines(test[3,],type="b",col="red")
 
-totBef <- mean(abs(test[7,22]-test[1,22])/(test[7,22]),abs(test[7,23]-test[1,23])/(test[7,23]))+mean(abs(test[8,22]-test[2,22])/(test[8,22]),abs(test[8,23]-test[2,23])/(test[8,23]))+mean(abs(test[9,22]-test[3,22])/(test[9,22]),abs(test[9,23]-test[3,23])/(test[9,23]))+mean(abs(test[10,22]-test[4,22])/(test[10,22]),abs(test[10,23]-test[4,23])/(test[10,23]))+mean(abs(test[11,22]-test[5,22])/(test[11,22]),abs(test[11,23]-test[5,23])/(test[11,23]))+mean(abs(test[12,22]-test[6,22])/(test[12,22]),abs(test[12,23]-test[6,23])/(test[12,23]))
-totBef/6
+plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[4,])))
+lines(test[4,],type="b",col="red")
 
-
-mean(rowMeans(abs((test[7:12,22:23]-test[1:6,22:23])/test[7:12,22:23])*100))
-plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[7,])))
+plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[7,])))
 lines(test[7,],type="b",col="red")
 
-plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[8,])))
+plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[8,])))
 lines(test[8,],type="b",col="red")
-
-plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[9,])))
-lines(test[9,],type="b",col="red")
-
-plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[10,])))
-lines(test[10,],type="b",col="red")
 
 plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[11,])))
 lines(test[11,],type="b",col="red")
@@ -336,4 +324,4 @@ lines(test[11,],type="b",col="red")
 plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[12,])))
 lines(test[12,],type="b",col="red")
 
-
+View(test )

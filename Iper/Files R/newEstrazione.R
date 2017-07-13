@@ -249,8 +249,8 @@ for (currentYear in unique(storeOrderedByWeek2$ANNONO)){
           valueWeekAfter <- storeOrderedByWeek2[which (as.numeric(as.character(storeOrderedByWeek2$REPARTO)) == currentDept &
                                                         as.numeric(as.character(storeOrderedByWeek2$SETTIMANANO)) == weekAfter
                                                       &  as.numeric(as.character(storeOrderedByWeek2$ANNONO)) == yearAfter ),c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21) ]
-          meanBefore <- rowMeans(valueWeekBefore - valueCurrentweek)
-          meanAfter <- rowMeans(valueWeekAfter - valueCurrentweek)
+          meanBefore <- abs(rowMeans(valueWeekBefore - valueCurrentweek))
+          meanAfter <- abs(rowMeans(valueWeekAfter - valueCurrentweek))
           
           if(meanBefore < meanAfter){
             print("inside")

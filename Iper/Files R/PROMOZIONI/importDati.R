@@ -1,5 +1,4 @@
 library(readr)
-library(readr)
 library(readxl)
 library(tseries)					#Time series analysis and computational finance.
 library(quantmod)					#assist the quantitative trader in the development, testing, and deployment of statistically based trading models.
@@ -29,15 +28,18 @@ library(plyr)
 library(fpc)
 library(ISOweek)
 library(sqldf)
-library(tcltk)
-library(tcltk2)
+
 
 # Estrazione_con_famiglia <- read_delim("~/Downloads/Estrazione con famiglia.csv", 
 #                                       "|", escape_double = FALSE, trim_ws = TRUE)
 
+
+########LETTURA FILE#####
+
 if(!exists("Estrazione_con_famiglia")){
   
-  Estrazione_con_famiglia <- read_delim("~/Downloads/Estrazione con famiglia.csv", 
+  # lettura da file
+  Estrazione_con_famiglia <- read_delim("~/Downloads/EstrazioneNew.csv", 
                                         "|", escape_double = FALSE, trim_ws = TRUE, 
                                         col_types = list(col_number() , col_character() ,col_number() , col_character() ,col_number() , col_character() ,
                                                          col_number() , col_character() ,col_character(), col_character() , col_character(), col_character(),
@@ -46,25 +48,47 @@ if(!exists("Estrazione_con_famiglia")){
   
   
   
-
+  
   View(Estrazione_con_famiglia)
   
   
+  ################rimozioni duplicati per i campi selezionati
   
-  selectedStorePromoNoDuplicate<- Estrazione_con_famiglia[!(duplicated(Estrazione_con_famiglia[c("ENTE","SETTORE","REPARTO","SETTIMANA","GRUPPO","FAMIGLIA","QUANTITA' VENDUTA TOTALE",
-                                                                                                 "QUANTITA' VENDUTA PROMO")])), ]
+  selectedStorePromoNoDuplicate <- sqldf("SELECT ENTE,SETTORE,REPARTO,SETTIMANA,MAX(PROMOZIONE_CD) AS PROMOZIONE_CD,MAX(DATA_INIZIO) AS DATA_INIZIO,MAX(DATA_FINE) AS DATA_FINE,GRUPPO,FAMIGLIA,
+                                         MAX([VALORE VENDUTO TOTALE]) AS [VALORE VENDUTO TOTALE],
+                                         MAX([QUANTITA' VENDUTA TOTALE]) AS [QUANTITA' VENDUTA TOTALE],SUM([VALORE VENDUTO PROMO]) AS [VALORE VENDUTO PROMO],
+                                         SUM([QUANTITA' VENDUTA PROMO]) AS [QUANTITA' VENDUTA PROMO]
+                                         FROM Estrazione_con_famiglia GROUP BY ENTE,SETTORE,REPARTO,SETTIMANA,GRUPPO,FAMIGLIA")
+  
+  selectedStorePromoNoDuplicate2<- Estrazione_con_famiglia[!(duplicated(Estrazione_con_famiglia[c("ENTE","SETTORE","REPARTO","SETTIMANA","GRUPPO","FAMIGLIA","QUANTITA' VENDUTA TOTALE",
+                                                                                                  "QUANTITA' VENDUTA PROMO")])), ]
   View(selectedStorePromoNoDuplicate)
+  # aggiunta nuova colonna contenente gli ultimi due charatteri della colonna settimana
   Estrazione_con_famiglia$SETTIMANANO <- substr(Estrazione_con_famiglia$SETTIMANA,5,6)
+  # aggiunta nuova colonna contenente i primi quattro charatteri della colonna settimana
   Estrazione_con_famiglia$ANNONO <- substr(Estrazione_con_famiglia$SETTIMANA,1,4)
   
-  selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE %in% c(9,8,31,21,4) ) ,]
+  # tengo solo gli enti selezionati 
   
+  selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE %in% c(9,8,31,21,4) ) ,]
+  selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE %in% c(9,8,31,21,4) ) ,]
+  
+  # come prima
   selectedStorePromoNoDuplicate$SETTIMANANO <- substr(selectedStorePromoNoDuplicate$SETTIMANA,5,6)
   selectedStorePromoNoDuplicate$ANNONO <- substr(selectedStorePromoNoDuplicate$SETTIMANA,1,4)
   
-  selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[ , -c(2,3,4,6,8,11,15,17) ]
+  selectedStorePromoNoDuplicate2$SETTIMANANO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,5,6)
+  selectedStorePromoNoDuplicate2$ANNONO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,1,4)
+  
+  # rimuovo colonne selezionate
+  selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[ , -c(2,3,4,6,8,11,15,17) ]
   
 }
+
+
+################ #######
+
+# creo la tabella con tutte le combinazioni necessarie prendendo dare e combinazioni di settore,reparto,gruppo,famiglia
 
 tabelladipartenza<- Estrazione_con_famiglia[,c(5,7,14,16)]
 tabelladipartenza <- unique(tabelladipartenza)
@@ -75,19 +99,29 @@ storeOrderedByWeekPromo <- merge(x = tabelladate, y = tabelladipartenza, by = NU
 
 
 
+# boh
+# selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),16] <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),]$'QUANTITA\' VENDUTA PROMO'
+# selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]$'QUANTITA\' VENDUTA PROMO'
+# selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]$'QUANTITA\' VENDUTA PROMO'
+# selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),19] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),]$'QUANTITA\' VENDUTA PROMO'
+# selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),20] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]$'QUANTITA\' VENDUTA PROMO'
+
+
 selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),16] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),]$'QUANTITA\' VENDUTA PROMO'
 selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]$'QUANTITA\' VENDUTA PROMO'
 selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]$'QUANTITA\' VENDUTA PROMO'
 selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),19] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),]$'QUANTITA\' VENDUTA PROMO'
 selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),20] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]$'QUANTITA\' VENDUTA PROMO'
 
+
+# prendo i dati dei solo enti che mi interessano
 store1 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),]
 store2 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]
 store3 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]
 store4 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),]
 store5 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]
 
-
+# unisco tutta la tabella per ottenere quello che mi serve
 
 storeOrderedByWeekPromo <-merge(x = storeOrderedByWeekPromo, y = store1[,c(2,3,8,9,13,14,15)], by=c("ANNONO","SETTIMANANO","REPARTO","SETTORE","GRUPPO","FAMIGLIA"), all.x = TRUE)
 colnames(storeOrderedByWeekPromo) <- c("ANNONO","SETTIMANANO","REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE1")
@@ -100,13 +134,14 @@ colnames(storeOrderedByWeekPromo) <- c("ANNONO","SETTIMANANO","REPARTO","SETTORE
 storeOrderedByWeekPromo <-merge(x = storeOrderedByWeekPromo, y = store5[,c(2,3,8,9,13,14,15)], by=c("ANNONO","SETTIMANANO","REPARTO","SETTORE","GRUPPO","FAMIGLIA"), all.x = TRUE)
 colnames(storeOrderedByWeekPromo) <- c("ANNONO","SETTIMANANO","REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE1","ENTE2","ENTE3","ENTE4","ENTE5")
 
+# dove mancano valori metto 0
 storeOrderedByWeekPromo[is.na(storeOrderedByWeekPromo)] <- 0
 
-Estrazione_con_famiglia[is.na(Estrazione_con_famiglia),]
+# Estrazione_con_famiglia[is.na(Estrazione_con_famiglia),]
 
 
 
-# ##########################################################RIMOZIONE SETTIMANA 53
+###########################################################RIMOZIONE SETTIMANA 53 #############
 
 
 
@@ -213,8 +248,13 @@ if(53 %in% storeOrderedByWeekPromo$SETTIMANANO){
 }
 
 
+#########################################################################################
 
 
+
+
+# count_raw<-sqldf("SELECT COUNT(*) FROM selectedStorePromoNoDuplicate WHERE PROMOZIONE_CD IS NULL AND [QUANTITA' VENDUTA PROMO] >0")
+# count_raw<-sqldf("SELECT DISTINCT(SETTIMANA) FROM selectedStorePromoNoDuplicate WHERE PROMOZIONE_CD IS NULL AND [QUANTITA' VENDUTA PROMO] >0")
 
 # count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM Estrazione_con_famiglia WHERE ENTE in (9,8,31,21,4)")
 # 
@@ -223,72 +263,73 @@ if(53 %in% storeOrderedByWeekPromo$SETTIMANANO){
 # 
 # 
 # 
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA ")
+count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO  FROM tsPromo ")
 # 
 # 
 # count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 AND ENTE2 != 0 AND ENTE3 != 0 AND ENTE4 != 0 AND ENTE5 != 0
 #                  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 181")
 
 
-count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 OR ENTE2 != 0 OR ENTE3 != 0 OR ENTE4 != 0 OR ENTE5 != 0 
-                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 181")
+# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 OR ENTE2 != 0 OR ENTE3 != 0 OR ENTE4 != 0 OR ENTE5 != 0 
+#                  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 181")
+print(count_raw)
 
-count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA , COUNT(*) FROM storeOrderedByWeekPromo WHERE ENTE1 = 0 AND ENTE2 = 0 AND ENTE3 = 0 AND ENTE4 = 0 AND ENTE5 = 0 
-                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < 18")
+count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM storeOrderedByWeekPromo WHERE ENTE1 = 0 AND ENTE2 = 0 AND ENTE3 = 0 AND ENTE4 = 0 AND ENTE5 = 0 
+                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < 27 ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
 
 
+# IMPOSTARE 15% CALCOLATO AUTOMATICAMENTE
+
+tsPromo <-merge(x = count_raw, y = storeOrderedByWeekPromo, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA"))
+
+# cambio da character a numeric
+class(tsPromo$ANNONO) <- "numeric"
+class(tsPromo$SETTIMANANO) <- "numeric"
+
+tsPromo <- sqldf("SELECT * FROM tsPromo ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,SETTIMANANO")
 
 
-asdasd <-merge(x = count_raw, y = storeOrderedByWeekPromo, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA"))
+familyList <- unique(tsPromo$FAMIGLIA)
+yearList2 <- head(unique(tsPromo$ANNONO),-1)
 
-count_raw1<-sqldf("SELECT DISTINCT  REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM asdasd")
 
-# for(currentReparto in unique(storeOrderedByWeekPromo$REPARTO)){
-#   
-#   for(currentSettore in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$REPARTO == currentReparto),]$SETTORE ) ){
-#     
-#     for(currentGruppo in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore),]$GRUPPO)){
-#       
-#       
-#       
-#       
-#       
-#       for(currentFamiglia in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore & storeOrderedByWeekPromo$GRUPPO == currentGruppo),]$FAMIGLIA) ){
-#         
-#         print(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$REPARTO == currentReparto & storeOrderedByWeekPromo$SETTORE == currentSettore & storeOrderedByWeekPromo$GRUPPO == currentGruppo),])
-#         
-#         
-#       }
-#     }
-#   }
-# } 
+############CLUSTERING#####
 
 
 
+listAllReparto <- list() #contiene tutte le liste dei dipartimenti per un anno
 
-
-
-
-
-
-
-listAllDeptYear2 <- list() #contiene tutte le liste dei dipartimenti per un anno
-yearList2 <- c(2014,2015,2016)
-
-for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
+for(currentReparto in unique(tsPromo$REPARTO) ){
   
-  for(currentGruppo in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore),]$GRUPPO)){
+  
+  listAllSettore <- list()
+  
+  for(currentSettore in unique(tsPromo[which(tsPromo$REPARTO == currentReparto),]$SETTORE)){
     
-    for(currentFamiglia in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore & storeOrderedByWeekPromo$GRUPPO == currentGruppo),]$FAMIGLIA) ){
+    
+    
+    
+    
+    
+    listAllGroupSettore <- list()
+    
+    for(currentGruppo in unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO)){
+      
+      # for(currentFamiglia in unique(tsPromo[which(tsPromo$SETTORE == currentSettore & tsPromo$GRUPPO == currentGruppo),]$FAMIGLIA) ){
       
       # print("dept cycle")
       # print(deptSelected)
-      reversedStoreOrderedByWeekIper2 <- t(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore &
-                                                                           storeOrderedByWeekPromo$GRUPPO == currentGruppo &
-                                                                           storeOrderedByWeekPromo$FAMIGLIA == currentFamiglia &
-                                                                           storeOrderedByWeek2$ANNONO!= 2017),])
+      # reversedStoreOrderedByWeekIper2 <- t(tsPromo[which(tsPromo$SETTORE == currentSettore &
+      #                                                      tsPromo$GRUPPO == currentGruppo &
+      #                                                      tsPromo$FAMIGLIA == currentFamiglia &
+      #                                                      tsPromo$ANNONO!= 2017),])
       
       
+      reversedStoreOrderedByWeekIper2 <- t(tsPromo[which(tsPromo$SETTORE == currentSettore &
+                                                           tsPromo$GRUPPO == currentGruppo &
+                                                           tsPromo$ANNONO!= tail(unique(tsPromo$ANNONO),1) ),])
+      
+      familyListClustering <- unique(reversedStoreOrderedByWeekIper2[4,])
       
       
       reversedStoreForClusterIper2 <- reversedStoreOrderedByWeekIper2
@@ -306,16 +347,29 @@ for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
       
       reversedClusterYears2 <- matrix(ncol=52)
       
-      for(year in yearList2){
-        
-        startIndex <- (52*(match(year,yearList2)-1) )
-        
-        endIndex <- (52*(match(year,yearList2)) )
-        # print((startIndex+1) : endIndex)
-        
-        reversedClusterYears2 <- rbind(reversedClusterYears2,reversedStoreForClusterIper2[,( (startIndex+1) : endIndex)])
+      appoggio <- reversedStoreForClusterIper2
+      
+      
+      for(currentFamily in familyListClustering){
         
         
+        for(year in yearList2){
+          
+          
+          
+          reversedClusterYears2 <- rbind(reversedClusterYears2, appoggio[,1:52] )
+          appoggio <- appoggio[,-(1:52)]
+          
+          
+          
+          # startIndex <- (52* (match(year,yearList2) -1) )
+          # 
+          # endIndex <- (52*(match(year,yearList2)) )
+          # # print((startIndex+1) : endIndex)
+          # 
+          # reversedClusterYears2 <- rbind(reversedClusterYears2,reversedStoreForClusterIper2[,( (startIndex+1) : endIndex)])
+          
+        }
       }
       
       reversedClusterYears2 <- reversedClusterYears2[-1,]
@@ -329,7 +383,7 @@ for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
         for(y in 1: nrow(reversedClusterYears2)){
           
           cosineDistanceMatrix2[x ,y ] <- (1 - ( (as.numeric(reversedClusterYears2[x,]) %*% as.numeric(reversedClusterYears2[y,])) / 
-                                                  (sqrt((as.numeric(reversedClusterYears2[x,]) %*% as.numeric(reversedClusterYears2[x,])) * (as.numeric(reversedClusterYears2[y,])%*%as.numeric(reversedClusterYears2[y,]) ) ))))
+                                                   (sqrt((as.numeric(reversedClusterYears2[x,]) %*% as.numeric(reversedClusterYears2[x,])) * (as.numeric(reversedClusterYears2[y,])%*%as.numeric(reversedClusterYears2[y,]) ) ))))
           
         }
       }
@@ -339,7 +393,7 @@ for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
       listSilhouette2 <- list() #CONTIENE LA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
       listSilhouetteAvgWidth2 <- list() #CONTIENE LA MEDIA DELLA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
       listBestCluster2 <- list() #CONTIENE IL MIGLIOR CLUSTER BASATO SUI RISULTATI DELLA SILHOUETTE
-      listMatrixDeptYears2 <- list() #CONTIENE LA MATRICE DEI CLUSTER PER OGNI REPARTO PER OGNI ANNO
+      listMatrixGroup <- list() #CONTIENE LA MATRICE DEI CLUSTER PER OGNI REPARTO PER OGNI ANNO
       class(reversedClusterYears2) <- "numeric"
       
       for (k in 2:(nrow(reversedClusterYears2) -1) ){
@@ -359,31 +413,47 @@ for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
       }
       
       # print((which.max(unlist(listSilhouetteAvgWidth)))+1)   #se il miglior cluster ? da 2 sta nell index 1, quindi +1
-      bestClusterNo2 = (which.max(unlist(listSilhouetteAvgWidth2)))
+      bestClusterNo2 = (which.max( unlist(listSilhouetteAvgWidth2) ) )
       clusterMatrix2 = do.call(cbind, listSkMeans2)
+      
       print(clusterMatrix2[,bestClusterNo2]$cluster)
       
       
+      # LIST MATRIX GROUP CONTIENE TUTTI I TENTIATIVI DA 2 A N-1 DI CLUTSERING (NESSUNA UTILITà AL MOMENTO, SALVATE PER NON SAPER NE LEGGERE NE SCRIVERE)
+      listMatrixGroup[[ match(currentGruppo, unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO ) ) ]] <- clusterMatrix2  
       
-      listMatrixDeptYears2[[(match(deptSelected,deptNumbersSecond))]] <- clusterMatrix    
+      # CONTIENE TRA TUTTI I ITENTATIVI DI CLUSTER FATTI DA 2 A N-1, SOLO IL MIGLIORE
+      # IN 
+      listBestCluster2[[  match(currentGruppo, unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO ) ) ]] <- clusterMatrix2[,bestClusterNo2]$cluster 
       
-      listBestCluster[[match(deptSelected,deptNumbersSecond)]] <- clusterMatrix[,bestClusterNo]$cluster #CONTIENE IL MIGLIOR CLUSTER PER OGNI DEPT PER OGNI ANNO
       
+      listSummaryGroup <-list(listSkMeans2,listSilhouette2,listSilhouetteAvgWidth2, listMatrixGroup ,listBestCluster2) #CONTIENE LE 5 LISTE PER DIPARTIMENTO PER ANNO
       
-      listSummaryDeptYears <-list(listSkMeans,listSilhouette,listSilhouetteAvgWidth, listMatrixDeptYears ,listBestCluster) #CONTIENE LE 5 LISTE PER DIPARTIMENTO PER ANNO
-      
-      listAllDeptYear[[match(deptSelected,deptNumbersSecond)]] <- listSummaryDeptYears
+      listAllGroupSettore[[ match(currentGruppo, unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO ) ) ]] <- listSummaryGroup
       
       
     }
     
+    
+    listAllSettore[[match(currentSettore, unique(tsPromo[which(tsPromo$REPARTO == currentReparto),]$SETTORE))]] <- listAllGroupSettore
+    
   }
+  #   
+  #  
+  
+  listAllReparto[[match(currentReparto,unique(tsPromo$REPARTO))]] <-  listAllSettore
+  
 }
 
 par(mfrow = c(1, 1))
-plot(reversedStoreForClusterIper2[1,],type="l",col="blue", ylim=c(0,max(as.numeric(reversedStoreForClusterIper2))))
-lines(reversedStoreForClusterIper2[2,],type="l",col="red")
-lines(reversedStoreForClusterIper2[3,],type="l",col="green")
-lines(reversedStoreForClusterIper2[4,],type="l",col="black")
-lines(reversedStoreForClusterIper2[5,],type="l",col="purple")
+
+plot(reversedClusterYears2[1,],type="l",col="red", ylim=c(0,max(as.numeric(reversedClusterYears2))))
+
+for(pippo in 2:nrow(reversedClusterYears2)){
+  
+  lines(reversedClusterYears2[pippo,],type="l",col="red")
+  
+}
+
+
 

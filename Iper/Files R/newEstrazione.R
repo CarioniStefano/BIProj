@@ -501,7 +501,7 @@ for(repartoCurrent in unique(clusterDepts$REPARTO)){
 
 appoggioDepts <- (appoggioDepts[with(appoggioDepts, order(REPARTO, ANNONO , ENTE)), ])
 
-
+View(appoggioDepts)
 
 
 

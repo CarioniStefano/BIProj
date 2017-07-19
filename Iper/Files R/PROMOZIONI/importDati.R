@@ -521,27 +521,51 @@ for(currentReparto in unique(tsPromo$REPARTO) ){
 # clusterDepts <- clusterDepts [which( (selectedStoreDeptAggregated$ANNONO %in% yearList2)),]
 # 
 # clusterDepts <- clusterDepts[!duplicated(clusterDepts[,c('REPARTO','ENTE','ANNONO')]),c('REPARTO','ENTE','ANNONO')]
-clusterDepts <- cbind(clusterDataframe, clusterVector)
-appoggioDepts <- data.frame()
+clusterDepts2 <- cbind(clusterDataframe2, clusterVector2)
+appoggioDepts2 <- data.frame()
 
 
-
-for(repartoCurrent in unique(clusterDepts$REPARTO)){
+# in base all'ordine dei cicli cambia l'ordine di apoggioDepts2
+for(currentReparto in unique(tsPromo$REPARTO) ){
   
-  for(enteCurrent in storesNumbersSecond){
+  for(currentSettore in unique(tsPromo[which(tsPromo$REPARTO == currentReparto),]$SETTORE)){
     
-    for(annoCurrent in unique(clusterDepts$ANNONO)){
+    for(currentGruppo in unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO)){
       
-      
-      
-      
-      
-      
-      
-      appoggioDepts <- rbind(appoggioDepts, cbind(clusterDepts[which( as.numeric(as.character(clusterDepts$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDepts$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDepts$ENTE)) == as.numeric(enteCurrent)   ),
-                                                               ],
-                                                  t(storeOrderedByWeek2[which( as.numeric(storeOrderedByWeek2$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek2$ANNONO) == as.numeric(annoCurrent) ) ,
-                                                                        (match(enteCurrent,storesNumbersSecond) +3)])) )
+      for(currentFamiglia in unique(tsPromo[which(tsPromo$SETTORE == currentSettore & tsPromo$GRUPPO == currentGruppo),]$FAMIGLIA)){
+        
+        for(currentAnno in head(unique(tsPromo$ANNONO),-1) ) {
+          
+          for(currentEnte in unique(clusterDataframe2$ENTE)){
+            
+            
+            
+            
+          # prendo una riga da clusterDepts2 per ogni combinazione di repoarto, settore, gruppo , famiglia anno ed ente (quindi una tupla sola)
+            # ci attacco la ts presa da tsPromo per quella combinazione e la riporto in appoggioDepts2
+            # Questo per tutte le combinazioni
+          
+            appoggioDepts2 <- rbind(appoggioDepts2 , cbind(clusterDepts2[which( clusterDepts2$REPARTO == currentReparto &
+                                 clusterDepts2$SETTORE == currentSettore &
+                                 clusterDepts2$GRUPPO == currentGruppo &
+                                 clusterDepts2$FAMIGLIA == currentFamiglia &
+                                 clusterDepts2$ANNONO == currentAnno &
+                                clusterDepts2$ENTE == currentEnte),] ,
+                                t(    tsPromo[which( tsPromo$REPARTO == currentReparto &
+                              tsPromo$SETTORE == currentSettore &
+                              tsPromo$GRUPPO == currentGruppo &
+                              tsPromo$FAMIGLIA == currentFamiglia &
+                              tsPromo$ANNONO == currentAnno),
+                                (match(currentEnte,unique(clusterDataframe2$ENTE)) +6)])      ))
+          
+          
+          
+          
+          
+          }
+        }
+        
+      }
       
     }
     
@@ -551,21 +575,22 @@ for(repartoCurrent in unique(clusterDepts$REPARTO)){
   
 }
 
+View(appoggioDepts2)
 
-appoggioDepts <- (appoggioDepts[with(appoggioDepts, order(REPARTO, ANNONO , ENTE)), ])
+appoggioDepts2 <- sqldf("SELECT *  FROM appoggioDepts2 order by REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE")
 
 
 
 
-par(mfrow = c(1, 1))
-
-plot(reversedClusterYears2[1,],type="l",col="red", ylim=c(0,max(as.numeric(reversedClusterYears2))))
-
-for(pippo in 2:nrow(reversedClusterYears2)){
-  
-  lines(reversedClusterYears2[pippo,],type="l",col="red")
-  
-}
+# par(mfrow = c(1, 1))
+# 
+# plot(reversedClusterYears2[1,],type="l",col="red", ylim=c(0,max(as.numeric(reversedClusterYears2))))
+# 
+# for(pippo in 2:nrow(reversedClusterYears2)){
+#   
+#   lines(reversedClusterYears2[pippo,],type="l",col="red")
+#   
+# }
 
 
 

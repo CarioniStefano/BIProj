@@ -39,7 +39,7 @@ library(sqldf)
 if(!exists("Estrazione_con_famiglia")){
   
   # lettura da file
-  Estrazione_con_famiglia <- read_delim("~/Downloads/EstrazioneNew.csv", 
+  Estrazione_con_famiglia <- read_delim("C:/Users/luca.tornari/Downloads/EstrazioneNew.csv", 
                                         "|", escape_double = FALSE, trim_ws = TRUE, 
                                         col_types = list(col_number() , col_character() ,col_number() , col_character() ,col_number() , col_character() ,
                                                          col_number() , col_character() ,col_character(), col_character() , col_character(), col_character(),
@@ -60,9 +60,11 @@ if(!exists("Estrazione_con_famiglia")){
                                          SUM([QUANTITA' VENDUTA PROMO]) AS [QUANTITA' VENDUTA PROMO]
                                          FROM Estrazione_con_famiglia GROUP BY ENTE,SETTORE,REPARTO,SETTIMANA,GRUPPO,FAMIGLIA")
   
-  selectedStorePromoNoDuplicate2<- Estrazione_con_famiglia[!(duplicated(Estrazione_con_famiglia[c("ENTE","SETTORE","REPARTO","SETTIMANA","GRUPPO","FAMIGLIA","QUANTITA' VENDUTA TOTALE",
-                                                                                                  "QUANTITA' VENDUTA PROMO")])), ]
+  # selectedStorePromoNoDuplicate2<- Estrazione_con_famiglia[!(duplicated(Estrazione_con_famiglia[c("ENTE","SETTORE","REPARTO","SETTIMANA","GRUPPO","FAMIGLIA","QUANTITA' VENDUTA TOTALE",
+  #                                                                                                 "QUANTITA' VENDUTA PROMO")])), ]
+  
   View(selectedStorePromoNoDuplicate)
+  
   # aggiunta nuova colonna contenente gli ultimi due charatteri della colonna settimana
   Estrazione_con_famiglia$SETTIMANANO <- substr(Estrazione_con_famiglia$SETTIMANA,5,6)
   # aggiunta nuova colonna contenente i primi quattro charatteri della colonna settimana
@@ -71,17 +73,18 @@ if(!exists("Estrazione_con_famiglia")){
   # tengo solo gli enti selezionati 
   
   selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE %in% c(9,8,31,21,4) ) ,]
-  selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE %in% c(9,8,31,21,4) ) ,]
+  #selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE %in% c(9,8,31,21,4) ) ,]
   
-  # come prima
+  # aggiunta nuova colonna contenente gli ultimi due charatteri della colonna settimana
   selectedStorePromoNoDuplicate$SETTIMANANO <- substr(selectedStorePromoNoDuplicate$SETTIMANA,5,6)
+  # aggiunta nuova colonna contenente i primi quattro charatteri della colonna settimana
   selectedStorePromoNoDuplicate$ANNONO <- substr(selectedStorePromoNoDuplicate$SETTIMANA,1,4)
   
-  selectedStorePromoNoDuplicate2$SETTIMANANO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,5,6)
-  selectedStorePromoNoDuplicate2$ANNONO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,1,4)
+  # selectedStorePromoNoDuplicate2$SETTIMANANO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,5,6)
+  # selectedStorePromoNoDuplicate2$ANNONO <- substr(selectedStorePromoNoDuplicate2$SETTIMANA,1,4)
   
   # rimuovo colonne selezionate
-  selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[ , -c(2,3,4,6,8,11,15,17) ]
+  #selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[ , -c(2,3,4,6,8,11,15,17) ]
   
 }
 
@@ -100,8 +103,7 @@ if(!exists("storeOrderedByWeekPromo")){
   storeOrderedByWeekPromo <- merge(x = tabelladate, y = tabelladipartenza, by = NULL)
   
   
-  
-  # boh
+  # inserisco in colonne distinte le quantità promo dei vari enti
   # selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),16] <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),]$'QUANTITA\' VENDUTA PROMO'
   # selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]$'QUANTITA\' VENDUTA PROMO'
   # selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]$'QUANTITA\' VENDUTA PROMO'
@@ -151,7 +153,7 @@ if(!exists("storeOrderedByWeekPromo")){
   
   
   
-  # I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PI? ALLA SETTIMANA
+  # I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PIù? ALLA SETTIMANA
   # QUINDI MEDIO LA SETTIMANA 53 DEL 2015 CON LA SETTIMANA 52 DELLO STESSO ANNO
   
   
@@ -257,47 +259,24 @@ if(!exists("storeOrderedByWeekPromo")){
 #########################################################################################
 
 
+# Selezionare le famiglie che non contengono troppi 0 nella serie storica
 
-
-# count_raw<-sqldf("SELECT COUNT(*) FROM selectedStorePromoNoDuplicate WHERE PROMOZIONE_CD IS NULL AND [QUANTITA' VENDUTA PROMO] >0")
-# count_raw<-sqldf("SELECT DISTINCT(SETTIMANA) FROM selectedStorePromoNoDuplicate WHERE PROMOZIONE_CD IS NULL AND [QUANTITA' VENDUTA PROMO] >0")
-
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM Estrazione_con_famiglia WHERE ENTE in (9,8,31,21,4)")
-# 
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA , COUNT(*) FROM storeOrderedByWeekPromo  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
-# 
-# 
-# 
-# 
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO  FROM tsPromo ")
-# 
-# 
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 AND ENTE2 != 0 AND ENTE3 != 0 AND ENTE4 != 0 AND ENTE5 != 0
-#                  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 181")
-
-
-# count_raw<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 OR ENTE2 != 0 OR ENTE3 != 0 OR ENTE4 != 0 OR ENTE5 != 0 
-#                  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 181")
-
-
-
-numeroCombinazioneAnnoSettimana <- nrow(unique(cbind(storeOrderedByWeekPromo$ANNONO,storeOrderedByWeekPromo$SETTIMANANO)))
-percentuale15 <- (numeroCombinazioneAnnoSettimana/100)*15
+# numeroCombinazioneAnnoSettimana <- nrow(unique(cbind(storeOrderedByWeekPromo$ANNONO,storeOrderedByWeekPromo$SETTIMANANO)))
+# percentuale15 <- (numeroCombinazioneAnnoSettimana/100)*15
 
 
 count_raw <- sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeOrderedByWeekPromo WHERE ENTE1 != 0 AND ENTE2 != 0 AND ENTE3 != 0 AND ENTE4 != 0 AND ENTE5 != 0 
-                   GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = 184")
+                   GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = (SELECT count(*)  FROM (select distinct ANNONO, SETTIMANANO FROM storeOrderedByWeekPromo))")
 
 count_raw2<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM storeOrderedByWeekPromo WHERE ENTE1 = 0 AND ENTE2 = 0 AND ENTE3 = 0 AND ENTE4 = 0 AND ENTE5 = 0 
-                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < 27 ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
+                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < (SELECT count(*)*15/100 FROM (select distinct ANNONO, SETTIMANANO FROM storeOrderedByWeekPromo)) ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
 
 count_raw <- rbind(count_raw,count_raw2)
 
 
 if(!exists("tsPromo")){
   
-  
-  # IMPOSTARE 15% CALCOLATO AUTOMATICAMENTE
+
   
   tsPromo <-merge(x = count_raw, y = storeOrderedByWeekPromo, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA"))
   

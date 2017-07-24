@@ -229,12 +229,12 @@ for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
 }
 
 
+listAllCLustering <- list()
 
-
-clusterCurrent <- 1
+clusterCurrent <- 7
 repartoSelected <- 1
 settoreSelected <- 10
- gruppoSelected <- 1
+gruppoSelected <- 6
 
 
 for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
@@ -245,6 +245,10 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
   # appoggioDepts2017 <- appoggioDepts2017[,0:22]
   
+  mostPupolatedCluster <-which.max(table(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                         appoggioDepts2017$SETTORE == settoreSelected &
+                                         appoggioDepts2017$GRUPPO == gruppoSelected ) , ]$clusterVector2 ))
+  clusterCurrent <- mostPupolatedCluster
   
   dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                          appoggioDepts2017$SETTORE == settoreSelected &
@@ -260,6 +264,7 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   colnames(dataModel) <- 1:ncol(dataModel)
   
   if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+    
   
   
   
@@ -450,84 +455,61 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
     
   }
   
+  
+  listAllCLustering[[gruppoSelected]] <- test
+  
+  }else{
+    print("0 test")
   }
 }
+  
+  plot(listAllCLustering[[1]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][1,],listAllCLustering[[1]][6,])))
+  lines(listAllCLustering[[1]][6,],type="b",col="red")
+  
+  plot(listAllCLustering[[1]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][2,],listAllCLustering[[1]][7,])))
+  lines(listAllCLustering[[1]][7,],type="b",col="red")
+  
+  plot(listAllCLustering[[1]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][3,],listAllCLustering[[1]][8,])))
+  lines(listAllCLustering[[1]][8,],type="b",col="red")
+  
+  plot(listAllCLustering[[1]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][4,],listAllCLustering[[1]][9,])))
+  lines(listAllCLustering[[1]][9,],type="b",col="red")
+  
+  plot(listAllCLustering[[1]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][5,],listAllCLustering[[1]][10,])))
+  lines(listAllCLustering[[1]][10,],type="b",col="red")
 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,7])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,8])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,9])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,10])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,13])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,14])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,15])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,16])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,17])) ) ) 
-# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,18])) ) ) 
-
-# 
-# plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[6,])))
-# lines(test[6,],type="b",col="red")
-# 
-# plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[7,])))
-# lines(test[7,],type="b",col="red")
-# 
-# plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[8,])))
-# lines(test[8,],type="b",col="red")
-# 
-# plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[9,])))
-# lines(test[9,],type="b",col="red")
-# 
-# plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[10,])))
-# lines(test[10,],type="b",col="red")
-# 
-# plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[17,])))
-# lines(test[17,],type="b",col="red")
-# 
-# plot(test[7,],type="b",col="blue", ylim=c(0,max(test[7,],test[18,])))
-# lines(test[18,],type="b",col="red")
-# 
-# plot(test[8,],type="b",col="blue", ylim=c(0,max(test[8,],test[19,])))
-# lines(test[19,],type="b",col="red")
-# 
-# plot(test[9,],type="b",col="blue", ylim=c(0,max(test[9,],test[20,])))
-# lines(test[20,],type="b",col="red")
-# 
-# plot(test[10,],type="b",col="blue", ylim=c(0,max(test[10,],test[21,])))
-# lines(test[21,],type="b",col="red")
-# 
-# plot(test[11,],type="b",col="blue", ylim=c(0,max(test[11,],test[22,])))
-# lines(test[22,],type="b",col="red")
-# 
-# 
-# 
-# rmse(actual = test[7,22:(ncol(test)-1)], predicted = test[1,22:(ncol(test)-1)] )
-# rmse(actual = test[8,22:(ncol(test)-1)], predicted = test[2,22:(ncol(test)-1)] )
-# rmse(actual = test[9,22:(ncol(test)-1)], predicted = test[3,22:(ncol(test)-1)] )
-# rmse(actual = test[10,22:(ncol(test)-1)], predicted = test[4,22:(ncol(test)-1)] )
-# rmse(actual = test[11,22:(ncol(test)-1)], predicted = test[5,22:(ncol(test)-1)] )
-# rmse(actual = test[12,22:(ncol(test)-1)], predicted = test[6,22:(ncol(test)-1)] )
-# 
-# totBef <- mean(abs(test[7,22]-test[1,22])/(test[7,22]),abs(test[7,23]-test[1,23])/(test[7,23]))+mean(abs(test[8,22]-test[2,22])/(test[8,22]),abs(test[8,23]-test[2,23])/(test[8,23]))+mean(abs(test[9,22]-test[3,22])/(test[9,22]),abs(test[9,23]-test[3,23])/(test[9,23]))+mean(abs(test[10,22]-test[4,22])/(test[10,22]),abs(test[10,23]-test[4,23])/(test[10,23]))+mean(abs(test[11,22]-test[5,22])/(test[11,22]),abs(test[11,23]-test[5,23])/(test[11,23]))+mean(abs(test[12,22]-test[6,22])/(test[12,22]),abs(test[12,23]-test[6,23])/(test[12,23]))
-# totBef/6
-# 
-# 
-# mean(rowMeans(abs((test[7:12,22:23]-test[1:6,22:23])/test[7:12,22:23])*100))
-# plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[7,])))
-# lines(test[7,],type="b",col="red")
-# 
-# plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[8,])))
-# lines(test[8,],type="b",col="red")
-# 
-# plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[9,])))
-# lines(test[9,],type="b",col="red")
-# 
-# plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[10,])))
-# lines(test[10,],type="b",col="red")
-# 
-# plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[11,])))
-# lines(test[11,],type="b",col="red")
-# 
-# plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[12,])))
-# lines(test[12,],type="b",col="red")
-# 
+  
+  
+  
+  plot(listAllCLustering[[2]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][1,],listAllCLustering[[2]][13,])))
+  lines(listAllCLustering[[2]][13,],type="b",col="red")
+  
+  plot(listAllCLustering[[2]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][2,],listAllCLustering[[2]][14,])))
+  lines(listAllCLustering[[2]][14,],type="b",col="red")
+  
+  plot(listAllCLustering[[2]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][3,],listAllCLustering[[2]][15,])))
+  lines(listAllCLustering[[2]][15,],type="b",col="red")
+  
+  plot(listAllCLustering[[2]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][4,],listAllCLustering[[2]][16,])))
+  lines(listAllCLustering[[2]][16,],type="b",col="red")
+  
+  
+  
+  plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][3,])))
+  lines(listAllCLustering[[4]][3,],type="b",col="red")
+  
+  
+  
+  plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][12,])))
+  lines(listAllCLustering[[5]][12,],type="b",col="red")
+  
+  plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][13,])))
+  lines(listAllCLustering[[5]][13,],type="b",col="red")
+  
+  plot(listAllCLustering[[5]][6,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][6,],listAllCLustering[[5]][17,])))
+  lines(listAllCLustering[[5]][17,],type="b",col="red")
+  
+  plot(listAllCLustering[[5]][8,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][8,],listAllCLustering[[5]][19,])))
+  lines(listAllCLustering[[5]][19,],type="b",col="red")
+  
 # 

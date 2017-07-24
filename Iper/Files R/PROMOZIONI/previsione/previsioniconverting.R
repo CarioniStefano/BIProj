@@ -33,96 +33,102 @@ shift <- function(x, n, invert=FALSE, default=NA){
 clusterVector2017 <- c()
 
 
-tempDept2 <- tsPromo[which(tsPromo$REPARTO == 1 & tsPromo$SETTORE == 10 & tsPromo$GRUPPO == 1),]
+# tempDept2 <- tsPromo[which(tsPromo$REPARTO == 1 & tsPromo$SETTORE == 10 & tsPromo$GRUPPO == 1),]
 
 
-for (currentFamily in unique(tempDept2$FAMIGLIA) ) {
+tempDept2 <- tsPromo[which(tsPromo$REPARTO == 1 & tsPromo$SETTORE == 10),]
+
+for(cycleGruppo in unique(tempDept2$GRUPPO) ){
   
   
-  
-  reversedStoreOrderedByWeek2017 <- t( tempDept2[which(tempDept2$FAMIGLIA==currentFamily & tempDept2$ANNONO== 2017),] )
-  
-  reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
-  
-  for(currentEnte in unique(clusterDataframe2$ENTE)){
-    #print((match(storeNo,storesNumbersSecond)))
-    reversedStoreForCluster2017<- rbind(reversedStoreForCluster2017 , reversedStoreOrderedByWeek2017[(6+(match(currentEnte,unique(clusterDataframe2$ENTE)))),])
+  for (currentFamily in unique(tempDept2[which(tempDept2$GRUPPO == cycleGruppo),]$FAMIGLIA) ) {
     
-  }
-  
-  clusterVectorForGraph <- c()
-  clusterCentroids <- data.frame()
-  clusterMedoids <- data.frame()
-  
-  
-  clusterVectorForGraph <- append(clusterVectorForGraph, listAllReparto[[1]][[1]][[1]][[5]][[1]] )
-  
-
-  clusterNo<- unique(clusterVectorForGraph)
-  clusterNo <- sort(clusterNo, decreasing = FALSE)
-  
-   clusterCentroids <- unname(clusterCentroids)
-  clusterMedoids <- unname(clusterMedoids)
-  
-  
-  
-  # 
-  # print(match(deptSelected, deptNumbersSecond))
-  # print(max(clusterNo))
-  # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
-  
-  for(clst in clusterNo){
-    clusterMedoids <- rbind(clusterMedoids, (colMeans(appoggioDepts2[which(appoggioDepts2$REPARTO == 1 & 
-                                                                             appoggioDepts2$SETTORE == 10 & appoggioDepts2$GRUPPO == 1 & 
-                                                                             appoggioDepts2$clusterVector2 == as.numeric(clst)) ,8:ncol(appoggioDepts2)])))
-  }
-  
-  
-  # clusterCentroids<- rbind(clusterCentroids, unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
-  
-  # names(clusterMedoids)<- names(clusterCentroids)
-  
-  clusterMedoids <- clusterMedoids[,0:ncol(reversedStoreForCluster2017)]
-  
-  # clusterCentroids <- clusterCentroids[,0:ncol(reversedStoreForCluster2017)]
-  
-  
-  colnames(clusterMedoids) <- 1:ncol(clusterMedoids)
-  names(reversedStoreForCluster2017) <-  names(clusterMedoids)
-  colnames(reversedStoreForCluster2017) <- colnames(clusterMedoids)
-  
-  # reversedStoreForCluster2017 <- unname(reversedStoreForCluster2017)
-  reversedStoreForCluster2017 <- reversedStoreForCluster2017[(nrow(reversedStoreOrderedByWeek2017)+1):nrow(reversedStoreForCluster2017),]
-  class(reversedStoreForCluster2017) <- "numeric"
-  # reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterCentroids)
-  reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterMedoids)
-  reversedStoreForCluster2017 <- as.matrix(reversedStoreForCluster2017)
-  
-  
-  
-  cosineDistanceMatrix2017 <- matrix(nrow=nrow(reversedStoreForCluster2017),ncol=nrow(reversedStoreForCluster2017))
-  
-  for (x in 1:(nrow(reversedStoreForCluster2017)-max(clusterNo))){
     
-    for(y in 7: nrow(reversedStoreForCluster2017)){
-      
-      cosineDistanceMatrix2017[x ,y ] <- (1 - ( (reversedStoreForCluster2017[x,] %*% reversedStoreForCluster2017[y,]) /
-                                                  (sqrt((reversedStoreForCluster2017[x,]%*%reversedStoreForCluster2017[x,]) * (reversedStoreForCluster2017[y,]%*%reversedStoreForCluster2017[y,]) ))))
+    reversedStoreOrderedByWeek2017 <- t( tempDept2[which(tempDept2$GRUPPO == cycleGruppo & tempDept2$FAMIGLIA==currentFamily & tempDept2$ANNONO== 2017),] )
+    
+    reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
+    
+    for(currentEnte in unique(clusterDataframe2$ENTE)){
+      #print((match(storeNo,storesNumbersSecond)))
+      reversedStoreForCluster2017<- rbind(reversedStoreForCluster2017 , reversedStoreOrderedByWeek2017[(6+(match(currentEnte,unique(clusterDataframe2$ENTE)))),])
       
     }
+    
+    clusterVectorForGraph <- c()
+    clusterCentroids <- data.frame()
+    clusterMedoids <- data.frame()
+    
+    
+    clusterVectorForGraph <- append(clusterVectorForGraph, listAllReparto[[1]][[1]][[match(cycleGruppo,unique(tempDept2$GRUPPO))]][[5]][[match(cycleGruppo,unique(tempDept2$GRUPPO))]] )
+    
+    
+    clusterNo<- unique(clusterVectorForGraph)
+    clusterNo <- sort(clusterNo, decreasing = FALSE)
+    
+    clusterCentroids <- unname(clusterCentroids)
+    clusterMedoids <- unname(clusterMedoids)
+    
+    
+    
+    # 
+    # print(match(deptSelected, deptNumbersSecond))
+    # print(max(clusterNo))
+    # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
+    
+    for(clst in clusterNo){
+      clusterMedoids <- rbind(clusterMedoids, (colMeans(appoggioDepts2[which(appoggioDepts2$REPARTO == 1 & 
+                                                                               appoggioDepts2$SETTORE == 10 & appoggioDepts2$GRUPPO == cycleGruppo & 
+                                                                               appoggioDepts2$clusterVector2 == as.numeric(clst)) ,8:ncol(appoggioDepts2)])))
+    }
+    
+    
+    # clusterCentroids<- rbind(clusterCentroids, unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
+    
+    # names(clusterMedoids)<- names(clusterCentroids)
+    
+    clusterMedoids <- clusterMedoids[,0:ncol(reversedStoreForCluster2017)]
+    
+    # clusterCentroids <- clusterCentroids[,0:ncol(reversedStoreForCluster2017)]
+    
+    
+    colnames(clusterMedoids) <- 1:ncol(clusterMedoids)
+    names(reversedStoreForCluster2017) <-  names(clusterMedoids)
+    colnames(reversedStoreForCluster2017) <- colnames(clusterMedoids)
+    
+    # reversedStoreForCluster2017 <- unname(reversedStoreForCluster2017)
+    reversedStoreForCluster2017 <- reversedStoreForCluster2017[(nrow(reversedStoreOrderedByWeek2017)+1):nrow(reversedStoreForCluster2017),]
+    class(reversedStoreForCluster2017) <- "numeric"
+    # reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterCentroids)
+    reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterMedoids)
+    reversedStoreForCluster2017 <- as.matrix(reversedStoreForCluster2017)
+    
+    
+    
+    cosineDistanceMatrix2017 <- matrix(nrow=nrow(reversedStoreForCluster2017),ncol=nrow(reversedStoreForCluster2017))
+    
+    for (x in 1:(nrow(reversedStoreForCluster2017)-max(clusterNo))){
+      
+      for(y in 6: nrow(reversedStoreForCluster2017)){
+        
+        cosineDistanceMatrix2017[x ,y ] <- (1 - ( (reversedStoreForCluster2017[x,] %*% reversedStoreForCluster2017[y,]) /
+                                                    (sqrt((reversedStoreForCluster2017[x,]%*%reversedStoreForCluster2017[x,]) * (reversedStoreForCluster2017[y,]%*%reversedStoreForCluster2017[y,]) ))))
+        
+      }
+    }
+    
+    cosineDistanceMatrix2017 <- na.omit(cosineDistanceMatrix2017[,colSums(is.na(cosineDistanceMatrix2017))<nrow(cosineDistanceMatrix2017)])
+    
+    clusterVector2017 <- append(clusterVector2017, c(which.min(cosineDistanceMatrix2017[1,]) , which.min(cosineDistanceMatrix2017[2,]) , which.min(cosineDistanceMatrix2017[3,]) , 
+                                                     which.min(cosineDistanceMatrix2017[4,]) , which.min(cosineDistanceMatrix2017[5,])) )
+    print(clusterVector2017)
+    
   }
-  
-  cosineDistanceMatrix2017 <- na.omit(cosineDistanceMatrix2017[,colSums(is.na(cosineDistanceMatrix2017))<nrow(cosineDistanceMatrix2017)])
-  
-  clusterVector2017 <- append(clusterVector2017, c(which.min(cosineDistanceMatrix2017[1,]) , which.min(cosineDistanceMatrix2017[2,]) , which.min(cosineDistanceMatrix2017[3,]) , 
-                                                   which.min(cosineDistanceMatrix2017[4,]) , which.min(cosineDistanceMatrix2017[5,])) )
-  print(clusterVector2017)
   
 }
 
 
 
-colors = c("red", "red", "red", "red", "red","cyan2","green","black","cyan2","yellow","darkgreen","lightpink")
+colors = c("red", "red", "red", "red", "red","cyan2","green","black","orange","yellow","darkgreen","lightpink")
 
 xrange <- range(1, ncol(reversedStoreForCluster2017))
 # yrange <- range(c(0, na.omit(max(tempDept[,7:ncol(tempDept)]))))
@@ -140,21 +146,9 @@ for(lineeeee in 1:nrow(reversedStoreForCluster2017)){
         lty = 1,
         lwd = 2,
         col = colors[lineeeee], #+1 perch? indice parte da 1
-        pch = pchDot
+        pch = 1
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -172,7 +166,7 @@ colnames(clusterDataframe2017) <- c("ANNONO","REPARTO","SETTORE","GRUPPO","FAMIG
 
 clusterDataframe2017 <-merge(x = clusterDataframe2017, y = tsPromo[,c(1:5)],  by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ANNONO"))
 
-clusterDataframe2017 <- sqldf("SELECT REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE  FROM clusterDataframe2017 where REPARTO=1 and SETTORE=10 and GRUPPO=1 order by REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE")
+clusterDataframe2017 <- sqldf("SELECT REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE  FROM clusterDataframe2017 where REPARTO=1 and SETTORE=10 order by REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE")
 
 clusterDataframe2017 <- unique(clusterDataframe2017)
 
@@ -198,183 +192,342 @@ appoggioDepts2017 <- data.frame()
 
 
 
-for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
+for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
   
-  for(enteCurrent in storesNumbersSecond){
+  for(currentSettore in unique(clusterDataframeAllin[which(clusterDataframeAllin$REPARTO == currentReparto),]$SETTORE)){
     
-    for(annoCurrent in unique(clusterDeptsAllin$ANNONO)){   
+    for(currentGruppo in unique(clusterDataframeAllin[which(clusterDataframeAllin$SETTORE == currentSettore),]$GRUPPO)){
       
-      appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDeptsAllin[which( as.numeric(as.character(clusterDeptsAllin$REPARTO)) == as.numeric(repartoCurrent) & as.numeric(as.character(clusterDeptsAllin$ANNONO)) == as.numeric(annoCurrent) & as.numeric(as.character(clusterDeptsAllin$ENTE)) == as.numeric(enteCurrent)   ),
-                                                                                 ],
-                                                               t(storeOrderedByWeek2[which( as.numeric(storeOrderedByWeek2$REPARTO) == as.numeric(repartoCurrent) & as.numeric(storeOrderedByWeek2$ANNONO) == as.numeric(annoCurrent) ) ,
-                                                                                     (match(enteCurrent,storesNumbersSecond) +3)])) )
-      
+      for(currentFamiglia in unique(clusterDataframeAllin[which(clusterDataframeAllin$SETTORE == currentSettore & clusterDataframeAllin$GRUPPO == currentGruppo),]$FAMIGLIA)){
+        
+        for(currentAnno in unique(clusterDataframeAllin[which(clusterDataframeAllin$SETTORE == currentSettore & clusterDataframeAllin$GRUPPO == currentGruppo & clusterDataframeAllin$FAMIGLIA == currentFamiglia),]$ANNONO ) ) {
+          # print(currentAnno)
+          for(currentEnte in unique(clusterDataframeAllin$ENTE)){
+            
+            
+            
+            appoggioDepts2017 <- rbind.fill(appoggioDepts2017, cbind(clusterDataframeAllin[which(clusterDataframeAllin$REPARTO == currentReparto &
+                                                                                                   clusterDataframeAllin$SETTORE == currentSettore &
+                                                                                                   clusterDataframeAllin$GRUPPO == currentGruppo &
+                                                                                                   clusterDataframeAllin$FAMIGLIA == currentFamiglia &
+                                                                                                   clusterDataframeAllin$ANNONO == currentAnno &
+                                                                                                   clusterDataframeAllin$ENTE == currentEnte),
+                                                                                           ],
+                                                                     t(tsPromo[which(tsPromo$REPARTO == currentReparto &
+                                                                                       tsPromo$SETTORE == currentSettore &
+                                                                                       tsPromo$GRUPPO == currentGruppo &
+                                                                                       tsPromo$FAMIGLIA == currentFamiglia &
+                                                                                       tsPromo$ANNONO == currentAnno) ,
+                                                                               (match(currentEnte,unique(clusterDataframe2$ENTE)) + 6) ] ) ) )
+            
+          }
+        }
+      }
     }
+  }
+  
+}
+
+
+
+
+clusterCurrent <- 1
+repartoSelected <- 1
+settoreSelected <- 10
+ gruppoSelected <- 1
+
+
+for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
+  print(gruppoSelected)
+  
+  
+  # View(appoggioDepts2017)
+  # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
+  # appoggioDepts2017 <- appoggioDepts2017[,0:22]
+  
+  
+  dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                         appoggioDepts2017$SETTORE == settoreSelected &
+                                         appoggioDepts2017$GRUPPO == gruppoSelected &
+                                         appoggioDepts2017$clusterVector2 == clusterCurrent) , c(5,8:ncol(appoggioDepts2017))])
+  
+  
+  dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
+  
+  class(dataModel) <- "numeric"
+  dataModel <- dataModel[-1,]
+  
+  colnames(dataModel) <- 1:ncol(dataModel)
+  
+  if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+  
+  
+  
+  training <- data.frame(1:23)
+  
+  
+  
+  # SELEZIONO COLONNE DI TRAINING
+  for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+    
+    
+    training<- cbind(training, as.matrix(dataModel[1:23,colAssa])  )
     
   }
   
+  training <- t(training[,-1])
   
   
+  test <- data.frame(1:23)
+  
+  for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+    
+    test<- cbind(test, as.matrix(dataModel[1:23,colAssa])  )
+    
+  }
+  
+  test <- t(test[,-1])
+  
+  # test <- t(na.omit(data.frame(dataModel[1:23,6])))
+  # 
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,7]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,8]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,9]))))
+  # 
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,10]))))
+  
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,11]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,12]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,13]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,14]))))
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,15]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,16]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,17]))))
+  # 
+  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,18]))))
+  
+  
+  
+  
+  rownames(training) <- NULL
+  colnames(training) <- NULL
+  
+  
+  rownames(test) <- NULL
+  colnames(test) <- NULL
+  #fine creazione del test set
+  
+  bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+  preProc <- c("center","scale")                #imposta i parametri per il preprocessing
+  #setta uno scenario casuale
+  # indexTrn <- ncol(training)                    # ???
+  
+  #creazione del modello di apprendimento
+  #
+  print("train")
+  svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+  # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
+  svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+  
+  
+  if(nrow(test) == 1){
+    
+    test <- rbind(test,test)
+  }
+  
+  predsvm <- predict(svmBest, test[,-ncol(test)])
+  actualTS <- test[,ncol(test)]
+  
+  predictedTS <- predsvm
+  print(predsvm)
+  
+  
+  
+  
+  # plot(training[1,],type="b",col="blue", ylim=c(0,2000))
+  # lines(training[2,],type="b",col="black")
+  # lines(training[3,],type="b",col="green")
+  # lines(training[4,],type="b",col="orange")
+  # lines(training[5,],type="b",col="red")
+  # 
+  # 
+  # 
+  # plot(test[1,],type="b",col="blue", ylim=c(0,2000))
+  # lines(test[2,],type="b",col="black")
+  # lines(test[3,],type="b",col="green")
+  # lines(test[4,],type="b",col="orange")
+  # lines(test[5,],type="b",col="red")
+  
+  
+  test[,ncol(test)] <- predictedTS
+  test <- cbind(test,0)
+  
+  
+  
+  
+  
+  
+  cbind(actualTS,predictedTS)
+  par(mfrow = c(1, 1))
+  
+  
+  
+  training <- data.frame(1:24)
+  
+  
+  
+  # SELEZIONO COLONNE DI TRAINING
+  for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+    
+    
+    training<- cbind(training, as.matrix(dataModel[1:24,colAssa])  )
+    
+  }
+  
+  training <- t(training[,-1])
+  
+  rownames(training) <- NULL
+  colnames(training) <- NULL
+  
+  
+  rownames(test) <- NULL
+  colnames(test) <- NULL
+  
+  print("train 2")
+  svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+  svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+  predsvm <- predict(svmBest, test[,-ncol(test)])
+  
+  predictedTS <- predsvm
+  print(predsvm)
+  
+  
+  
+  test[,ncol(test)] <- predictedTS
+  test <- cbind(test,0)
+  
+  
+  training <- data.frame(1:25)
+  
+  # SELEZIONO COLONNE DI TRAINING
+  for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+    
+    training<- cbind(training, as.matrix(dataModel[1:25,colAssa])  )
+    
+  }
+  
+  training <- t(training[,-1])
+  rownames(training) <- NULL
+  colnames(training) <- NULL
+  
+  
+  rownames(test) <- NULL
+  colnames(test) <- NULL
+  
+  print("train 3")
+  svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
+  svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+  predsvm <- predict(svmBest, test[,-ncol(test)])
+  predictedTS <- predsvm
+  print(predsvm)
+  
+  
+  test[,ncol(test)] <- predictedTS
+  
+  
+  for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+    
+    test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,colAssa])) ) )
+    
+  }
+  
+  }
 }
 
-clusterCurrent <- 2
-deptSelected <- 6
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,7])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,8])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,9])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,10])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,13])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,14])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,15])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,16])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,17])) ) ) 
+# test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,18])) ) ) 
 
-# View(appoggioDepts2017)
-appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
-# appoggioDepts2017 <- appoggioDepts2017[,0:22]
-
-
-assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPARTO)) == as.numeric(deptSelected) &
-                                   as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
-
-
-predictData2 <- data.frame(1:22)
-
-
-for(colAssa in c(1:6)){
-  
-  predictData2<- cbind(predictData2, as.matrix(assa[1:22,colAssa])  )
-  
-}
-
-predictData2 <- t(predictData2[,-1])
-
-# colnames(predictData2) <- c("nolag","lag1","lag2")
-
-test <- t(na.omit(data.frame(assa[1:22,7])))
-
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,8]))))
-
-
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,9]))))
-
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,10]))))
-
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,11]))))
-test <- rbind(test,t(na.omit(data.frame(assa[1:22,12]))))
-
-
-# predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,9])))))
-# predictInput <- cbind(shift(predictFrame,-1),shift(predictFrame,-2),predictFrame)
-# predictData <- predictInput[complete.cases(predictInput),]
-# colnames(predictData2) <- c("nolag","lag1","lag2")
-
-# trainIndex <- 1:(nrow(predictData2))
-training <- predictData2
-rownames(training) <- NULL
-colnames(training) <- NULL
-#fine creazione del training set
-
-#inizio creazione del test set
-# test <- as.data.frame(predictData[-trainIndex,])
-
-rownames(test) <- NULL
-colnames(test) <- NULL
-#fine creazione del test set
-
-bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-preProc <- c("center","scale")                #imposta i parametri per il preprocessing
-set.seed(2)                                #setta uno scenario casuale
-indexTrn <- ncol(training)                    # ???
-
-#creazione del modello di apprendimento
-#
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-# svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
-svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-predsvm <- predict(svmBest, test[,-ncol(test)])
-actualTS <- test[,ncol(test)]
-predictedTS <- predsvm
-
-
-test[,ncol(test)] <- predictedTS
-test <- cbind(test,0)
-
-cbind(actualTS,predictedTS)
-par(mfrow = c(1, 1))
-
-
-predictData2 <- data.frame(1:23)
-
-
-for(colAssa in c(1:6)){
-  
-  predictData2<- cbind(predictData2, as.matrix(assa[1:23,colAssa])  )
-  
-}
-
-predictData2 <- t(predictData2[,-1])
-
-training <- predictData2
-
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-predsvm <- predict(svmBest, test[,-ncol(test)])
-
-predictedTS <- predsvm
-
-
-
-test[,ncol(test)] <- predictedTS
-test <- cbind(test,0)
-
-
-predictData2 <- data.frame(1:24)
-
-
-for(colAssa in c(1:6)){
-  
-  predictData2<- cbind(predictData2, as.matrix(assa[1:24,colAssa])  )
-  
-}
-
-predictData2 <- t(predictData2[,-1])
-
-training <- predictData2
-
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-predsvm <- predict(svmBest, test[,-ncol(test)])
-predictedTS <- predsvm
-
-test[,ncol(test)] <- predictedTS
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,7])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,8])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,9])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,10])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,11])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:24,12])) ) ) 
-
-
-rmse(actual = test[7,22:(ncol(test)-1)], predicted = test[1,22:(ncol(test)-1)] )
-rmse(actual = test[8,22:(ncol(test)-1)], predicted = test[2,22:(ncol(test)-1)] )
-rmse(actual = test[9,22:(ncol(test)-1)], predicted = test[3,22:(ncol(test)-1)] )
-rmse(actual = test[10,22:(ncol(test)-1)], predicted = test[4,22:(ncol(test)-1)] )
-rmse(actual = test[11,22:(ncol(test)-1)], predicted = test[5,22:(ncol(test)-1)] )
-rmse(actual = test[12,22:(ncol(test)-1)], predicted = test[6,22:(ncol(test)-1)] )
-
-totBef <- mean(abs(test[7,22]-test[1,22])/(test[7,22]),abs(test[7,23]-test[1,23])/(test[7,23]))+mean(abs(test[8,22]-test[2,22])/(test[8,22]),abs(test[8,23]-test[2,23])/(test[8,23]))+mean(abs(test[9,22]-test[3,22])/(test[9,22]),abs(test[9,23]-test[3,23])/(test[9,23]))+mean(abs(test[10,22]-test[4,22])/(test[10,22]),abs(test[10,23]-test[4,23])/(test[10,23]))+mean(abs(test[11,22]-test[5,22])/(test[11,22]),abs(test[11,23]-test[5,23])/(test[11,23]))+mean(abs(test[12,22]-test[6,22])/(test[12,22]),abs(test[12,23]-test[6,23])/(test[12,23]))
-totBef/6
-
-
-mean(rowMeans(abs((test[7:12,22:23]-test[1:6,22:23])/test[7:12,22:23])*100))
-plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[7,])))
-lines(test[7,],type="b",col="red")
-
-plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[8,])))
-lines(test[8,],type="b",col="red")
-
-plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[9,])))
-lines(test[9,],type="b",col="red")
-
-plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[10,])))
-lines(test[10,],type="b",col="red")
-
-plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[11,])))
-lines(test[11,],type="b",col="red")
-
-plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[12,])))
-lines(test[12,],type="b",col="red")
-
-
+# 
+# plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[6,])))
+# lines(test[6,],type="b",col="red")
+# 
+# plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[7,])))
+# lines(test[7,],type="b",col="red")
+# 
+# plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[8,])))
+# lines(test[8,],type="b",col="red")
+# 
+# plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[9,])))
+# lines(test[9,],type="b",col="red")
+# 
+# plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[10,])))
+# lines(test[10,],type="b",col="red")
+# 
+# plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[17,])))
+# lines(test[17,],type="b",col="red")
+# 
+# plot(test[7,],type="b",col="blue", ylim=c(0,max(test[7,],test[18,])))
+# lines(test[18,],type="b",col="red")
+# 
+# plot(test[8,],type="b",col="blue", ylim=c(0,max(test[8,],test[19,])))
+# lines(test[19,],type="b",col="red")
+# 
+# plot(test[9,],type="b",col="blue", ylim=c(0,max(test[9,],test[20,])))
+# lines(test[20,],type="b",col="red")
+# 
+# plot(test[10,],type="b",col="blue", ylim=c(0,max(test[10,],test[21,])))
+# lines(test[21,],type="b",col="red")
+# 
+# plot(test[11,],type="b",col="blue", ylim=c(0,max(test[11,],test[22,])))
+# lines(test[22,],type="b",col="red")
+# 
+# 
+# 
+# rmse(actual = test[7,22:(ncol(test)-1)], predicted = test[1,22:(ncol(test)-1)] )
+# rmse(actual = test[8,22:(ncol(test)-1)], predicted = test[2,22:(ncol(test)-1)] )
+# rmse(actual = test[9,22:(ncol(test)-1)], predicted = test[3,22:(ncol(test)-1)] )
+# rmse(actual = test[10,22:(ncol(test)-1)], predicted = test[4,22:(ncol(test)-1)] )
+# rmse(actual = test[11,22:(ncol(test)-1)], predicted = test[5,22:(ncol(test)-1)] )
+# rmse(actual = test[12,22:(ncol(test)-1)], predicted = test[6,22:(ncol(test)-1)] )
+# 
+# totBef <- mean(abs(test[7,22]-test[1,22])/(test[7,22]),abs(test[7,23]-test[1,23])/(test[7,23]))+mean(abs(test[8,22]-test[2,22])/(test[8,22]),abs(test[8,23]-test[2,23])/(test[8,23]))+mean(abs(test[9,22]-test[3,22])/(test[9,22]),abs(test[9,23]-test[3,23])/(test[9,23]))+mean(abs(test[10,22]-test[4,22])/(test[10,22]),abs(test[10,23]-test[4,23])/(test[10,23]))+mean(abs(test[11,22]-test[5,22])/(test[11,22]),abs(test[11,23]-test[5,23])/(test[11,23]))+mean(abs(test[12,22]-test[6,22])/(test[12,22]),abs(test[12,23]-test[6,23])/(test[12,23]))
+# totBef/6
+# 
+# 
+# mean(rowMeans(abs((test[7:12,22:23]-test[1:6,22:23])/test[7:12,22:23])*100))
+# plot(test[1,],type="b",col="blue", ylim=c(0,max(test[1,],test[7,])))
+# lines(test[7,],type="b",col="red")
+# 
+# plot(test[2,],type="b",col="blue", ylim=c(0,max(test[2,],test[8,])))
+# lines(test[8,],type="b",col="red")
+# 
+# plot(test[3,],type="b",col="blue", ylim=c(0,max(test[3,],test[9,])))
+# lines(test[9,],type="b",col="red")
+# 
+# plot(test[4,],type="b",col="blue", ylim=c(0,max(test[4,],test[10,])))
+# lines(test[10,],type="b",col="red")
+# 
+# plot(test[5,],type="b",col="blue", ylim=c(0,max(test[5,],test[11,])))
+# lines(test[11,],type="b",col="red")
+# 
+# plot(test[6,],type="b",col="blue", ylim=c(0,max(test[6,],test[12,])))
+# lines(test[12,],type="b",col="red")
+# 
+# 

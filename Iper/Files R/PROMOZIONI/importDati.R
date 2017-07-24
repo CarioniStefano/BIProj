@@ -34,12 +34,12 @@ library(sqldf)
 #                                       "|", escape_double = FALSE, trim_ws = TRUE)
 
 
-########LETTURA FILE#####
+########################################LETTURA FILE#############################################
 
 if(!exists("Estrazione_con_famiglia")){
   
   # lettura da file
-  Estrazione_con_famiglia <- read_delim("C:/Users/luca.tornari/Downloads/EstrazioneNew.csv", 
+  Estrazione_con_famiglia <- read_delim("~/Downloads/EstrazioneNew.csv", 
                                         "|", escape_double = FALSE, trim_ws = TRUE, 
                                         col_types = list(col_number() , col_character() ,col_number() , col_character() ,col_number() , col_character() ,
                                                          col_number() , col_character() ,col_character(), col_character() , col_character(), col_character(),
@@ -49,7 +49,7 @@ if(!exists("Estrazione_con_famiglia")){
   
   
   
-  View(Estrazione_con_famiglia)
+  # View(Estrazione_con_famiglia)
   
   
   ################rimozioni duplicati per i campi selezionati
@@ -103,7 +103,7 @@ if(!exists("storeOrderedByWeekPromo")){
   storeOrderedByWeekPromo <- merge(x = tabelladate, y = tabelladipartenza, by = NULL)
   
   
-  # inserisco in colonne distinte le quantità promo dei vari enti
+  # inserisco in colonne distinte le quantit? promo dei vari enti
   # selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),16] <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE == 9),]$'QUANTITA\' VENDUTA PROMO'
   # selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]$'QUANTITA\' VENDUTA PROMO'
   # selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]$'QUANTITA\' VENDUTA PROMO'
@@ -146,14 +146,11 @@ if(!exists("storeOrderedByWeekPromo")){
   storeOrderedByWeekPromo[is.na(storeOrderedByWeekPromo)] <- 0
   
   
-  
-  
-  
   ###########################################################RIMOZIONE SETTIMANA 53 #############
   
   
   
-  # I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PIù? ALLA SETTIMANA
+  # I VALORI DELLA SETTIMANA 53 SONO MOLTO DIVERSI DALLA 52 E 1, MA NEL COMPLESSO DI AVVICINA MOLTO DI PI?? ALLA SETTIMANA
   # QUINDI MEDIO LA SETTIMANA 53 DEL 2015 CON LA SETTIMANA 52 DELLO STESSO ANNO
   
   
@@ -167,14 +164,14 @@ if(!exists("storeOrderedByWeekPromo")){
   
   if(53 %in% storeOrderedByWeekPromo$SETTIMANANO){
     
-    
     for(currentDept in unique(storeOrderedByWeekPromo$REPARTO)){
       
-      for(currentSettore in unique(storeOrderedByWeekPromo$SETTORE)){
+      for(currentSettore in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$REPARTO == currentDept),]$SETTORE) ){
         
-        for(currentGruppo in unique(storeOrderedByWeekPromo$GRUPPO)){
+        for(currentGruppo in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore),]$GRUPPO) ){
           
-          for(currentFamiglia in unique(storeOrderedByWeekPromo$FAMIGLIA)){
+          for(currentFamiglia in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore & 
+                                                                      storeOrderedByWeekPromo$GRUPPO == currentGruppo ),]$FAMIGLIA) ){
             
             valueCurrentweek <- storeOrderedByWeekPromo[which( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
                                                                  as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
@@ -200,7 +197,7 @@ if(!exists("storeOrderedByWeekPromo")){
             meanBefore <- rowMeans(abs(valueWeekBefore - valueCurrentweek))
             meanAfter <- rowMeans(abs(valueWeekAfter - valueCurrentweek))
             
-            print("banana")
+            # print("banana")
             
             if(!(length(meanAfter) == 0)){
               
@@ -269,14 +266,15 @@ count_raw <- sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA  FROM storeO
                    GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) = (SELECT count(*)  FROM (select distinct ANNONO, SETTIMANANO FROM storeOrderedByWeekPromo))")
 
 count_raw2<-sqldf("SELECT DISTINCT REPARTO,SETTORE,GRUPPO,FAMIGLIA FROM storeOrderedByWeekPromo WHERE ENTE1 = 0 AND ENTE2 = 0 AND ENTE3 = 0 AND ENTE4 = 0 AND ENTE5 = 0 
-                 GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < (SELECT count(*)*15/100 FROM (select distinct ANNONO, SETTIMANANO FROM storeOrderedByWeekPromo)) ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
+                  GROUP BY REPARTO,SETTORE,GRUPPO,FAMIGLIA HAVING COUNT(*) < (SELECT count(*)*15/100 FROM (select distinct ANNONO, SETTIMANANO FROM storeOrderedByWeekPromo)) ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA")
 
 count_raw <- rbind(count_raw,count_raw2)
 
 
-if(!exists("tsPromo")){
-  
 
+####################################CLUSTERING#########################################
+
+if(!exists("tsPromo")){
   
   tsPromo <-merge(x = count_raw, y = storeOrderedByWeekPromo, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA"))
   
@@ -287,13 +285,8 @@ if(!exists("tsPromo")){
   tsPromo <- sqldf("SELECT * FROM tsPromo ORDER BY REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,SETTIMANANO")
   
   
-  familyList <- unique(tsPromo$FAMIGLIA)
+  # familyList <- unique(tsPromo$FAMIGLIA)
   yearList2 <- head(unique(tsPromo$ANNONO),-1)
-  
-  
-  ############CLUSTERING#####
-  
-  
   
   listAllReparto <- list() #contiene tutte le liste dei dipartimenti per un anno
   
@@ -309,10 +302,6 @@ if(!exists("tsPromo")){
       print("SETTORE")
       print(currentSettore)
       
-      
-      
-      
-      
       listAllGroupSettore <- list()
       
       for(currentGruppo in unique(tsPromo[which(tsPromo$SETTORE == currentSettore),]$GRUPPO)){
@@ -320,32 +309,29 @@ if(!exists("tsPromo")){
         print("GRUPPO")
         print(currentGruppo)
         
-       
-        
-        
-        reversedStoreOrderedByWeekIper2 <- t(tsPromo[which(tsPromo$SETTORE == currentSettore &
-                                                             tsPromo$GRUPPO == currentGruppo &
-                                                             tsPromo$ANNONO!= tail(unique(tsPromo$ANNONO),1) ),])
+        reversedStoreOrderedByWeekIper2 <- t( tsPromo[which(tsPromo$SETTORE == currentSettore &
+                                                              tsPromo$GRUPPO == currentGruppo &
+                                                              tsPromo$ANNONO!= tail(unique(tsPromo$ANNONO) , 1 ) ) , ] )
         
         familyListClustering <- unique(reversedStoreOrderedByWeekIper2[4,])
         
-        
         reversedStoreForClusterIper2 <- reversedStoreOrderedByWeekIper2
         
-        
-        
-        # ogni colonna Ã¨ uno store diverso 5 store
+        # ogni riga Ã¨ uno store diverso 5 store
+        # attacco in riga le timeseries ripetute
         for(storeNo in 1:5){
-          #print((match(storeNo,storesNumbersSecond)))
-          reversedStoreForClusterIper2<- rbind(reversedStoreForClusterIper2 , reversedStoreOrderedByWeekIper2[(6+storeNo),])
+          
+          reversedStoreForClusterIper2<- rbind (reversedStoreForClusterIper2 , reversedStoreOrderedByWeekIper2 [ ( 6+storeNo ) , ] )
           
         }
         
-        reversedStoreForClusterIper2 <- reversedStoreForClusterIper2[(nrow(reversedStoreOrderedByWeekIper2)+1):nrow(reversedStoreForClusterIper2),]
-        # print(nrow(reversedStoreForClusterIper2))
-        # print(ncol(reversedStoreForClusterIper2))
         
         
+        # Mantengo solo le righe contenenti le timeseries
+        reversedStoreForClusterIper2 <- reversedStoreForClusterIper2 [ ( nrow ( reversedStoreOrderedByWeekIper2 ) +1 ) : nrow( reversedStoreForClusterIper2 ) , ]
+        
+        
+        # SUDDIVIDO LA TS IN RIGHE DA 52 SETTIMANE
         reversedClusterYears2 <- matrix(ncol=52)
         
         appoggio <- reversedStoreForClusterIper2
@@ -354,10 +340,7 @@ if(!exists("tsPromo")){
         
         for(currentFamily in familyListClustering){
           
-          
           for(year in yearList2){
-            
-            
             
             reversedClusterYears2 <- rbind(reversedClusterYears2, appoggio[,1:52] )
             appoggio <- appoggio[,-(1:52)]
@@ -370,6 +353,7 @@ if(!exists("tsPromo")){
         
         # reversedCluster contiene 6 righe per il primo anno, poi 6 righe per il secondo, e sei righe per il terzo
         
+        # CALCOLO LA DISTANZA COSENO DELLE TIME SERIES
         cosineDistanceMatrix2 <- matrix(nrow=nrow(reversedClusterYears2),ncol=nrow(reversedClusterYears2))
         
         for (x in 1:nrow(reversedClusterYears2)){
@@ -387,7 +371,8 @@ if(!exists("tsPromo")){
         listSilhouette2 <- list() #CONTIENE LA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
         listSilhouetteAvgWidth2 <- list() #CONTIENE LA MEDIA DELLA SILHOUETTE DI OGNI TENTATIVO DI CLUSTER
         listBestCluster2 <- list() #CONTIENE IL MIGLIOR CLUSTER BASATO SUI RISULTATI DELLA SILHOUETTE
-        listMatrixGroup <- list() #CONTIENE LA MATRICE DEI CLUSTER PER OGNI REPARTO PER OGNI ANNO
+        listMatrixGroup <- list() #CONTIENE LA MATRICE DEI CLUSTER 
+        
         class(reversedClusterYears2) <- "numeric"
         
         for (k in 2:(nrow(reversedClusterYears2) -1) ){
@@ -428,12 +413,12 @@ if(!exists("tsPromo")){
         
       }
       
+      # CON LA FUNZIONE MATCH ANDIAMO A POSIZIONARE NELLA PRIMA POSIZIONE IL SETTORE CHE VIENE PER PRIMO ALL'INTERNO DEL VETTORE CON CUI CONFRONTIAMO
       
-      listAllSettore[[match(currentSettore, unique(tsPromo[which(tsPromo$REPARTO == currentReparto),]$SETTORE))]] <- listAllGroupSettore
+      
+      listAllSettore[[ match(currentSettore, unique(tsPromo[which(tsPromo$REPARTO == currentReparto),]$SETTORE))  ]] <- listAllGroupSettore
       
     }
-    #   
-    #  
     
     listAllReparto[[match(currentReparto,unique(tsPromo$REPARTO))]] <-  listAllSettore
     
@@ -441,17 +426,7 @@ if(!exists("tsPromo")){
 }
 
 
-
-
-
-
-# LISTE YEAR CONTIENE 
-
-# LIVELLO 1 : I TRE REPARTI 3 , 4, 6
-# LIVELLO 2 : LE 5 LISTE CHE RIASSUMONO IL DIPARTIMENTO
-# LIVELLO 3 : I SOTTOLIVELLI DI OGNI LISTA DESCRITTIVA
-
-
+####################### GENERO TABELLA CON TUTTE COMBINAZIONI DI REPARTO,SETTORE,GRUPPO,FAMIGLIA + ANNO ED ENTE APPENDO VETTORE DI CLUSTER ##################
 
 tabelladipartenzaCluster<- selectedStorePromoNoDuplicate[,c(3,2,8,9,1)]
 tabelladipartenzaCluster <- unique(tabelladipartenzaCluster)
@@ -475,8 +450,6 @@ clusterDataframe2 <- unique(clusterDataframe2)
 clusterDataframe2 <- clusterDataframe2[!clusterDataframe2$ANNONO == as.numeric("2017"), ]
 
 
-
-
 clusterVector2 <- c()
 
 for(currentReparto in unique(tsPromo$REPARTO) ){
@@ -492,15 +465,14 @@ for(currentReparto in unique(tsPromo$REPARTO) ){
 }
 
 
-
-
-
-
 # clusterDepts <- selectedStoreDeptAggregated[which( (as.numeric(as.character(selectedStoreDeptAggregated$REPARTO)) %in% deptNumbersSecond)),]
 # clusterDepts <- clusterDepts [which( (selectedStoreDeptAggregated$ANNONO %in% yearList2)),]
 # 
 # clusterDepts <- clusterDepts[!duplicated(clusterDepts[,c('REPARTO','ENTE','ANNONO')]),c('REPARTO','ENTE','ANNONO')]
 clusterDepts2 <- cbind(clusterDataframe2, clusterVector2)
+
+
+################################################## APPENDO ALLA MATRICE DI CUI SOPRA LE TIMESERIES IN RIGA ############################################################################################ 
 appoggioDepts2 <- data.frame()
 
 
@@ -520,27 +492,23 @@ for(currentReparto in unique(tsPromo$REPARTO) ){
             
             
             
-          # prendo una riga da clusterDepts2 per ogni combinazione di repoarto, settore, gruppo , famiglia anno ed ente (quindi una tupla sola)
+            # prendo una riga da clusterDepts2 per ogni combinazione di repoarto, settore, gruppo , famiglia anno ed ente (quindi una tupla sola)
             # ci attacco la ts presa da tsPromo per quella combinazione e la riporto in appoggioDepts2
             # Questo per tutte le combinazioni
-          
+            
             appoggioDepts2 <- rbind(appoggioDepts2 , cbind(clusterDepts2[which( clusterDepts2$REPARTO == currentReparto &
-                                 clusterDepts2$SETTORE == currentSettore &
-                                 clusterDepts2$GRUPPO == currentGruppo &
-                                 clusterDepts2$FAMIGLIA == currentFamiglia &
-                                 clusterDepts2$ANNONO == currentAnno &
-                                clusterDepts2$ENTE == currentEnte),] ,
-                                t(    tsPromo[which( tsPromo$REPARTO == currentReparto &
-                              tsPromo$SETTORE == currentSettore &
-                              tsPromo$GRUPPO == currentGruppo &
-                              tsPromo$FAMIGLIA == currentFamiglia &
-                              tsPromo$ANNONO == currentAnno),
-                                (match(currentEnte,unique(clusterDataframe2$ENTE)) +6)])      ))
-          
-          
-          
-          
-          
+                                                                                  clusterDepts2$SETTORE == currentSettore &
+                                                                                  clusterDepts2$GRUPPO == currentGruppo &
+                                                                                  clusterDepts2$FAMIGLIA == currentFamiglia &
+                                                                                  clusterDepts2$ANNONO == currentAnno &
+                                                                                  clusterDepts2$ENTE == currentEnte),] ,
+                                                           t(    tsPromo[which( tsPromo$REPARTO == currentReparto &
+                                                                                  tsPromo$SETTORE == currentSettore &
+                                                                                  tsPromo$GRUPPO == currentGruppo &
+                                                                                  tsPromo$FAMIGLIA == currentFamiglia &
+                                                                                  tsPromo$ANNONO == currentAnno),
+                                                                         (match(currentEnte,unique(clusterDataframe2$ENTE)) +6)])      ))
+            
           }
         }
         
@@ -557,19 +525,3 @@ for(currentReparto in unique(tsPromo$REPARTO) ){
 View(appoggioDepts2)
 
 appoggioDepts2 <- sqldf("SELECT *  FROM appoggioDepts2 order by REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE")
-
-
-
-
-# par(mfrow = c(1, 1))
-# 
-# plot(reversedClusterYears2[1,],type="l",col="red", ylim=c(0,max(as.numeric(reversedClusterYears2))))
-# 
-# for(pippo in 2:nrow(reversedClusterYears2)){
-#   
-#   lines(reversedClusterYears2[pippo,],type="l",col="red")
-#   
-# }
-
-
-

@@ -7,7 +7,7 @@
 
 require(zoo)
 
-
+set.seed(4844)
 
 shift <- function(x, n, invert=FALSE, default=NA){
   stopifnot(length(x)>=n)
@@ -222,270 +222,300 @@ for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
 
 
 
-listAllCLustering <- list()
+
+appoggioDeptsPred <- appoggioDepts2017[,c(1:4,6:7)]
+appoggioDeptsPred <- unique(appoggioDeptsPred)
+
 
 # clusterCurrent <- 6
 repartoSelected <- 1
-settoreSelected <- 10
-gruppoSelected <- 5
+# settoreSelected <- 10
+# gruppoSelected <- 1
 
-
-for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
-  print(gruppoSelected)
+for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected),]$SETTORE)){
   
+  print(paste("Settore",settoreSelected))
   
-  # View(appoggioDepts2017)
-  # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
-  # appoggioDepts2017 <- appoggioDepts2017[,0:22]
-  
-  clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
-                                                  appoggioDepts2017$SETTORE == settoreSelected &
-                                                  appoggioDepts2017$GRUPPO == gruppoSelected &
-                                                  appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 )
-  
-  for(clusterCurrent in clusterList){
-    
-    dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
-                                           appoggioDepts2017$SETTORE == settoreSelected &
-                                           appoggioDepts2017$GRUPPO == gruppoSelected &
-                                           appoggioDepts2017$clusterVector2 == clusterCurrent) , c(5,8:ncol(appoggioDepts2017))])
+  for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
+    print(paste("gruppo",gruppoSelected))
     
     
-    dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
+    # View(appoggioDepts2017)
+    # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
+    # appoggioDepts2017 <- appoggioDepts2017[,0:22]
     
-    class(dataModel) <- "numeric"
-    dataModel <- dataModel[-1,]
     
-    colnames(dataModel) <- 1:ncol(dataModel)
     
-    if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+    clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                                    appoggioDepts2017$SETTORE == settoreSelected &
+                                                    appoggioDepts2017$GRUPPO == gruppoSelected &
+                                                    appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 )
+    print(clusterList)
+    for(clusterCurrent in clusterList){
+      print(paste("cluster",clusterCurrent))
       
-      training <- data.frame(1:23)
       
-      # SELEZIONO COLONNE DI TRAINING
-      for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+      
+      dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                             appoggioDepts2017$SETTORE == settoreSelected &
+                                             appoggioDepts2017$GRUPPO == gruppoSelected &
+                                             appoggioDepts2017$clusterVector2 == clusterCurrent) , c(4:6,8:ncol(appoggioDepts2017))])
+      
+      
+      
+      
+      
+      
+      
+      
+      dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
+      
+      dataModel <- dataModel[-2,]
+      
+      dataModelFamAndEnte <- dataModel[1:2,]
+      dataModel <- dataModel [-c(1,2),]
+      
+      class(dataModel) <- "numeric"
+      colnames(dataModel) <- 1:ncol(dataModel)
+      
+      
+      # class(dataModel) <- "numeric"
+      
+      
+      # colnames(dataModel) <- 1:ncol(dataModel)
+      # C'è CORRISPONDENZA TRA LA COLONNA DEL DATA MODEL E LA RIGA DATAMODELFAMANENTE'
+      if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+        
+        training <- data.frame(1:23)
+        
+        # SELEZIONO COLONNE DI TRAINING
+        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+          
+          
+          training<- cbind(training, as.matrix(dataModel[1:23,colAssa])  )
+          
+        }
+        
+        training <- t(training[,-1])
         
         
-        training<- cbind(training, as.matrix(dataModel[1:23,colAssa])  )
+        test <- data.frame(1:23)
+        testNames <- data.frame(1:2)
+        # SELEZIONO COLONNE DI TEST
+        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+          
+          test<- cbind(test, as.matrix(dataModel[1:23,colAssa])  )
+          testNames <- cbind(testNames, dataModelFamAndEnte[,as.numeric(colAssa)])
+          
+        }
         
+        test <- t(test[,-1])
+        testNames <- testNames[,-1]
+        
+        rownames(training) <- NULL
+        colnames(training) <- NULL
+        
+        
+        rownames(test) <- NULL
+        colnames(test) <- NULL
+        #fine creazione del test set
+        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+        # bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+        preProc <- c("center","scale")                #imposta i parametri per il preprocessing
+        #setta uno scenario casuale
+        # indexTrn <- ncol(training)                    # ???
+        
+        #creazione del modello di apprendimento
+        #
+        print("train")
+        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
+        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+        
+        
+        if(nrow(test) == 1){
+          
+          test <- rbind(test,test)
+        }
+        
+        predsvm <- predict(svmBest, test[,-ncol(test)])
+        actualTS <- test[,ncol(test)]
+        
+        predictedTS <- predsvm
+        print(predsvm)
+        
+        
+        
+        
+        # plot(training[1,],type="b",col="blue", ylim=c(0,2000))
+        # lines(training[2,],type="b",col="black")
+        # lines(training[3,],type="b",col="green")
+        # lines(training[4,],type="b",col="orange")
+        # lines(training[5,],type="b",col="red")
+        # 
+        # 
+        # 
+        # plot(test[1,],type="b",col="blue", ylim=c(0,2000))
+        # lines(test[2,],type="b",col="black")
+        # lines(test[3,],type="b",col="green")
+        # lines(test[4,],type="b",col="orange")
+        # lines(test[5,],type="b",col="red")
+        
+        
+        test[,ncol(test)] <- predictedTS
+        test <- cbind(test,0)
+        cbind(actualTS,predictedTS)
+        par(mfrow = c(1, 1))
+        
+        training <- data.frame(1:24)
+        
+        # SELEZIONO COLONNE DI TRAINING
+        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+          
+          
+          training<- cbind(training, as.matrix(dataModel[1:24,colAssa])  )
+          
+        }
+        
+        training <- t(training[,-1])
+        
+        rownames(training) <- NULL
+        colnames(training) <- NULL
+        
+        
+        
+        
+        rownames(test) <- NULL
+        colnames(test) <- NULL
+        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+        print("train 2")
+        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+        predsvm <- predict(svmBest, test[,-ncol(test)])
+        
+        predictedTS <- predsvm
+        print(predsvm)
+        
+        
+        
+        test[,ncol(test)] <- predictedTS
+        test <- cbind(test,0)
+        
+        
+        training <- data.frame(1:25)
+        
+        # SELEZIONO COLONNE DI TRAINING
+        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+          
+          training<- cbind(training, as.matrix(dataModel[1:25,colAssa])  )
+          
+        }
+        
+        training <- t(training[,-1])
+        
+        rownames(training) <- NULL
+        colnames(training) <- NULL
+        
+        
+        rownames(test) <- NULL
+        colnames(test) <- NULL
+        
+        print("train 3")
+        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+        predsvm <- predict(svmBest, test[,-ncol(test)])
+        predictedTS <- predsvm
+        print(predsvm)
+        
+        
+        test[,ncol(test)] <- predictedTS
+        
+        effectiveValue <- t(data.frame(1:25))
+        
+        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+          
+          effectiveValue <- rbind(effectiveValue,t(na.omit(data.frame(dataModel[1:25,colAssa])) ) )
+          
+        }
+        effectiveValue <- effectiveValue[-1,]
+        
+        
+        
+        
+        
+        
+      }else{
+        print("0 test")
       }
-      
-      training <- t(training[,-1])
-      
-      
-      test <- data.frame(1:23)
-      
-      for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
-        
-        test<- cbind(test, as.matrix(dataModel[1:23,colAssa])  )
-        
-      }
-      
-      test <- t(test[,-1])
-      
-      rownames(training) <- NULL
-      colnames(training) <- NULL
-      
-      
-      rownames(test) <- NULL
-      colnames(test) <- NULL
-      #fine creazione del test set
-      
-      bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-      preProc <- c("center","scale")                #imposta i parametri per il preprocessing
-      #setta uno scenario casuale
-      # indexTrn <- ncol(training)                    # ???
-      
-      #creazione del modello di apprendimento
-      #
-      print("train")
-      svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-      # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
-      svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-      
-      
-      if(nrow(test) == 1){
-        
-        test <- rbind(test,test)
-      }
-      
-      predsvm <- predict(svmBest, test[,-ncol(test)])
-      actualTS <- test[,ncol(test)]
-      
-      predictedTS <- predsvm
-      print(predsvm)
-      
-      
-      
-      
-      # plot(training[1,],type="b",col="blue", ylim=c(0,2000))
-      # lines(training[2,],type="b",col="black")
-      # lines(training[3,],type="b",col="green")
-      # lines(training[4,],type="b",col="orange")
-      # lines(training[5,],type="b",col="red")
-      # 
-      # 
-      # 
-      # plot(test[1,],type="b",col="blue", ylim=c(0,2000))
-      # lines(test[2,],type="b",col="black")
-      # lines(test[3,],type="b",col="green")
-      # lines(test[4,],type="b",col="orange")
-      # lines(test[5,],type="b",col="red")
-      
-      
-      test[,ncol(test)] <- predictedTS
-      test <- cbind(test,0)
-      
-      
-      
-      
-      
-      
-      cbind(actualTS,predictedTS)
-      par(mfrow = c(1, 1))
-      
-      
-      
-      training <- data.frame(1:24)
-      
-      
-      
-      # SELEZIONO COLONNE DI TRAINING
-      for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
-        
-        
-        training<- cbind(training, as.matrix(dataModel[1:24,colAssa])  )
-        
-      }
-      
-      training <- t(training[,-1])
-      
-      rownames(training) <- NULL
-      colnames(training) <- NULL
-      
-      
-      rownames(test) <- NULL
-      colnames(test) <- NULL
-      
-      print("train 2")
-      svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-      svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-      predsvm <- predict(svmBest, test[,-ncol(test)])
-      
-      predictedTS <- predsvm
-      print(predsvm)
-      
-      
-      
-      test[,ncol(test)] <- predictedTS
-      test <- cbind(test,0)
-      
-      
-      training <- data.frame(1:25)
-      
-      # SELEZIONO COLONNE DI TRAINING
-      for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
-        
-        training<- cbind(training, as.matrix(dataModel[1:25,colAssa])  )
-        
-      }
-      
-      training <- t(training[,-1])
-      rownames(training) <- NULL
-      colnames(training) <- NULL
-      
-      
-      rownames(test) <- NULL
-      colnames(test) <- NULL
-      
-      print("train 3")
-      svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=100, trnControl=bootControl)
-      svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-      predsvm <- predict(svmBest, test[,-ncol(test)])
-      predictedTS <- predsvm
-      print(predsvm)
-      
-      
-      test[,ncol(test)] <- predictedTS
-      
-      
-      for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
-        
-        test <- rbind(test,t(na.omit(data.frame(dataModel[1:25,colAssa])) ) )
-        
-      }
-      
-      
-      listAllCLustering[[gruppoSelected]] <- test
-      
-    }else{
-      print("0 test")
     }
   }
 }
 
-plot(listAllCLustering[[1]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][1,],listAllCLustering[[1]][6,])))
-lines(listAllCLustering[[1]][6,],type="b",col="red")
 
-plot(listAllCLustering[[1]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][2,],listAllCLustering[[1]][7,])))
-lines(listAllCLustering[[1]][7,],type="b",col="red")
-
-plot(listAllCLustering[[1]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][3,],listAllCLustering[[1]][8,])))
-lines(listAllCLustering[[1]][8,],type="b",col="red")
-
-plot(listAllCLustering[[1]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][4,],listAllCLustering[[1]][9,])))
-lines(listAllCLustering[[1]][9,],type="b",col="red")
-
-plot(listAllCLustering[[1]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][5,],listAllCLustering[[1]][10,])))
-lines(listAllCLustering[[1]][10,],type="b",col="red")
-
-
-
-
-plot(listAllCLustering[[2]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][1,],listAllCLustering[[2]][13,])))
-lines(listAllCLustering[[2]][13,],type="b",col="red")
-
-plot(listAllCLustering[[2]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][2,],listAllCLustering[[2]][14,])))
-lines(listAllCLustering[[2]][14,],type="b",col="red")
-
-plot(listAllCLustering[[2]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][3,],listAllCLustering[[2]][15,])))
-lines(listAllCLustering[[2]][15,],type="b",col="red")
-
-plot(listAllCLustering[[2]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][4,],listAllCLustering[[2]][16,])))
-lines(listAllCLustering[[2]][16,],type="b",col="red")
-
-
-
-plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][13,])))
-lines(listAllCLustering[[4]][13,],type="b",col="red")
-
-plot(listAllCLustering[[4]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][3,],listAllCLustering[[4]][15,])))
-lines(listAllCLustering[[4]][15,],type="b",col="red")
-
-plot(listAllCLustering[[4]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][5,],listAllCLustering[[4]][17,])))
-lines(listAllCLustering[[4]][17,],type="b",col="red")
-
-plot(listAllCLustering[[4]][7,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][7,],listAllCLustering[[4]][19,])))
-lines(listAllCLustering[[4]][19,],type="b",col="red")
-
-plot(listAllCLustering[[4]][9,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][9,],listAllCLustering[[4]][21,])))
-lines(listAllCLustering[[4]][21,],type="b",col="red")
-
-
-
-plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][6,])))
-lines(listAllCLustering[[5]][6,],type="b",col="red")
-
-plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][7,])))
-lines(listAllCLustering[[5]][7,],type="b",col="red")
-
-plot(listAllCLustering[[5]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][3,],listAllCLustering[[5]][8,])))
-lines(listAllCLustering[[5]][8,],type="b",col="red")
-
-plot(listAllCLustering[[5]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][4,],listAllCLustering[[5]][9,])))
-lines(listAllCLustering[[5]][9,],type="b",col="red")
-
-plot(listAllCLustering[[5]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][5,],listAllCLustering[[5]][10,])))
-lines(listAllCLustering[[5]][10,],type="b",col="red")
-
-#   
+# 
+# plot(listAllCLustering[[1]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][1,],listAllCLustering[[1]][6,])))
+# lines(listAllCLustering[[1]][6,],type="b",col="red")
+# 
+# plot(listAllCLustering[[1]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][2,],listAllCLustering[[1]][7,])))
+# lines(listAllCLustering[[1]][7,],type="b",col="red")
+# 
+# plot(listAllCLustering[[1]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][3,],listAllCLustering[[1]][8,])))
+# lines(listAllCLustering[[1]][8,],type="b",col="red")
+# 
+# plot(listAllCLustering[[1]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][4,],listAllCLustering[[1]][9,])))
+# lines(listAllCLustering[[1]][9,],type="b",col="red")
+# 
+# plot(listAllCLustering[[1]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][5,],listAllCLustering[[1]][10,])))
+# lines(listAllCLustering[[1]][10,],type="b",col="red")
+# 
+# 
+# 
+# 
+# plot(listAllCLustering[[2]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][1,],listAllCLustering[[2]][13,])))
+# lines(listAllCLustering[[2]][13,],type="b",col="red")
+# 
+# plot(listAllCLustering[[2]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][2,],listAllCLustering[[2]][14,])))
+# lines(listAllCLustering[[2]][14,],type="b",col="red")
+# 
+# plot(listAllCLustering[[2]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][3,],listAllCLustering[[2]][15,])))
+# lines(listAllCLustering[[2]][15,],type="b",col="red")
+# 
+# plot(listAllCLustering[[2]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][4,],listAllCLustering[[2]][16,])))
+# lines(listAllCLustering[[2]][16,],type="b",col="red")
+# 
+# 
+# 
+# plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][13,])))
+# lines(listAllCLustering[[4]][13,],type="b",col="red")
+# 
+# plot(listAllCLustering[[4]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][3,],listAllCLustering[[4]][15,])))
+# lines(listAllCLustering[[4]][15,],type="b",col="red")
+# 
+# plot(listAllCLustering[[4]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][5,],listAllCLustering[[4]][17,])))
+# lines(listAllCLustering[[4]][17,],type="b",col="red")
+# 
+# plot(listAllCLustering[[4]][7,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][7,],listAllCLustering[[4]][19,])))
+# lines(listAllCLustering[[4]][19,],type="b",col="red")
+# 
+# plot(listAllCLustering[[4]][9,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][9,],listAllCLustering[[4]][21,])))
+# lines(listAllCLustering[[4]][21,],type="b",col="red")
+# 
+# 
+# 
+# plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][6,])))
+# lines(listAllCLustering[[5]][6,],type="b",col="red")
+# 
+# plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][7,])))
+# lines(listAllCLustering[[5]][7,],type="b",col="red")
+# 
+# plot(listAllCLustering[[5]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][3,],listAllCLustering[[5]][8,])))
+# lines(listAllCLustering[[5]][8,],type="b",col="red")
+# 
+# plot(listAllCLustering[[5]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][4,],listAllCLustering[[5]][9,])))
+# lines(listAllCLustering[[5]][9,],type="b",col="red")
+# 
+# plot(listAllCLustering[[5]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][5,],listAllCLustering[[5]][10,])))
+# lines(listAllCLustering[[5]][10,],type="b",col="red")
+# 
+# #   

@@ -45,7 +45,8 @@ for(cycleGruppo in unique(tempDept2$GRUPPO) ){
     
     
     reversedStoreOrderedByWeek2017 <- t( tempDept2[which(tempDept2$GRUPPO == cycleGruppo & tempDept2$FAMIGLIA==currentFamily & tempDept2$ANNONO== 2017),] )
-    
+    print(paste("GRUPPO", cycleGruppo))
+    # print(table(reversedStoreOrderedByWeek2017$FAMIGLIA))
     reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
     
     for(currentEnte in unique(clusterDataframe2$ENTE)){
@@ -76,6 +77,7 @@ for(cycleGruppo in unique(tempDept2$GRUPPO) ){
     # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
     
     for(clst in clusterNo){
+      print(clst)
       clusterMedoids <- rbind(clusterMedoids, (colMeans(appoggioDepts2[which(appoggioDepts2$REPARTO == 1 & 
                                                                                appoggioDepts2$SETTORE == 10 & appoggioDepts2$GRUPPO == cycleGruppo & 
                                                                                appoggioDepts2$clusterVector2 == as.numeric(clst)) ,8:ncol(appoggioDepts2)])))
@@ -128,27 +130,27 @@ for(cycleGruppo in unique(tempDept2$GRUPPO) ){
 
 
 
-colors = c("red", "red", "red", "red", "red","cyan2","green","black","orange","yellow","darkgreen","lightpink")
-
-xrange <- range(1, ncol(reversedStoreForCluster2017))
-# yrange <- range(c(0, na.omit(max(tempDept[,7:ncol(tempDept)]))))
-yrange <- range(c(0, 150000))
-
-plot(xrange,
-     yrange,
-     type = "n",
-     xlab = "WEEKNO",
-     ylab = "WeeklySales",main="banana")
-
-for(lineeeee in 1:nrow(reversedStoreForCluster2017)){
-  
-  lines(1:ncol(reversedStoreForCluster2017) ,reversedStoreForCluster2017[lineeeee,],
-        lty = 1,
-        lwd = 2,
-        col = colors[lineeeee], #+1 perch? indice parte da 1
-        pch = 1
-  )
-}
+# colors = c("red", "red", "red", "red", "red","cyan2","green","black","orange","yellow","darkgreen","lightpink")
+# 
+# xrange <- range(1, ncol(reversedStoreForCluster2017))
+# # yrange <- range(c(0, na.omit(max(tempDept[,7:ncol(tempDept)]))))
+# yrange <- range(c(0, 150000))
+# 
+# plot(xrange,
+#      yrange,
+#      type = "n",
+#      xlab = "WEEKNO",
+#      ylab = "WeeklySales",main="banana")
+# 
+# for(lineeeee in 1:nrow(reversedStoreForCluster2017)){
+#   
+#   lines(1:ncol(reversedStoreForCluster2017) ,reversedStoreForCluster2017[lineeeee,],
+#         lty = 1,
+#         lwd = 2,
+#         col = colors[lineeeee], #+1 perch? indice parte da 1
+#         pch = 1
+#   )
+# }
 
 
 
@@ -181,6 +183,8 @@ clusterDataframeAllin <- rbind(clusterDepts2,clusterDataframe2017)
 
 
 clusterDataframeAllin <- sqldf("SELECT *  FROM clusterDataframeAllin order by REPARTO,SETTORE,GRUPPO,FAMIGLIA,ANNONO,ENTE")
+
+
 
 
 
@@ -229,12 +233,15 @@ for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
 }
 
 
+
+
+
 listAllCLustering <- list()
 
-clusterCurrent <- 7
+clusterCurrent <- 6
 repartoSelected <- 1
 settoreSelected <- 10
-gruppoSelected <- 6
+gruppoSelected <- 5
 
 
 for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
@@ -248,7 +255,7 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   mostPupolatedCluster <-which.max(table(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                          appoggioDepts2017$SETTORE == settoreSelected &
                                          appoggioDepts2017$GRUPPO == gruppoSelected ) , ]$clusterVector2 ))
-  clusterCurrent <- mostPupolatedCluster
+   clusterCurrent <- mostPupolatedCluster
   
   dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                          appoggioDepts2017$SETTORE == settoreSelected &
@@ -461,7 +468,7 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   }else{
     print("0 test")
   }
-}
+ }
   
   plot(listAllCLustering[[1]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][1,],listAllCLustering[[1]][6,])))
   lines(listAllCLustering[[1]][6,],type="b",col="red")
@@ -495,21 +502,36 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   
   
   
-  plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][3,])))
-  lines(listAllCLustering[[4]][3,],type="b",col="red")
+  plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][13,])))
+  lines(listAllCLustering[[4]][13,],type="b",col="red")
+  
+  plot(listAllCLustering[[4]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][3,],listAllCLustering[[4]][15,])))
+  lines(listAllCLustering[[4]][15,],type="b",col="red")
+  
+  plot(listAllCLustering[[4]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][5,],listAllCLustering[[4]][17,])))
+  lines(listAllCLustering[[4]][17,],type="b",col="red")
+  
+  plot(listAllCLustering[[4]][7,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][7,],listAllCLustering[[4]][19,])))
+  lines(listAllCLustering[[4]][19,],type="b",col="red")
+  
+  plot(listAllCLustering[[4]][9,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][9,],listAllCLustering[[4]][21,])))
+  lines(listAllCLustering[[4]][21,],type="b",col="red")
+
   
   
+  plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][6,])))
+  lines(listAllCLustering[[5]][6,],type="b",col="red")
   
-  plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][12,])))
-  lines(listAllCLustering[[5]][12,],type="b",col="red")
+  plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][7,])))
+  lines(listAllCLustering[[5]][7,],type="b",col="red")
   
-  plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][13,])))
-  lines(listAllCLustering[[5]][13,],type="b",col="red")
+  plot(listAllCLustering[[5]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][3,],listAllCLustering[[5]][8,])))
+  lines(listAllCLustering[[5]][8,],type="b",col="red")
   
-  plot(listAllCLustering[[5]][6,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][6,],listAllCLustering[[5]][17,])))
-  lines(listAllCLustering[[5]][17,],type="b",col="red")
+  plot(listAllCLustering[[5]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][4,],listAllCLustering[[5]][9,])))
+  lines(listAllCLustering[[5]][9,],type="b",col="red")
   
-  plot(listAllCLustering[[5]][8,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][8,],listAllCLustering[[5]][19,])))
-  lines(listAllCLustering[[5]][19,],type="b",col="red")
-  
-# 
+  plot(listAllCLustering[[5]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][5,],listAllCLustering[[5]][10,])))
+  lines(listAllCLustering[[5]][10,],type="b",col="red")
+
+#   

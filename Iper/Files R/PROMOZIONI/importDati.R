@@ -70,9 +70,11 @@ if(!exists("Estrazione_con_famiglia")){
   # aggiunta nuova colonna contenente i primi quattro charatteri della colonna settimana
   Estrazione_con_famiglia$ANNONO <- substr(Estrazione_con_famiglia$SETTIMANA,1,4)
   
-  # tengo solo gli enti selezionati 
-  
-  selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE %in% c(9,8,31,21,4) ) ,]
+  # tengo solo gli enti selezionati
+  enti <- sqldf("select ente from Estrazione_con_famiglia group by ente order by count(*) desc limit 5")
+  enti <- enti[order(enti$ENTE),]
+  #enti <- c(4,8,9,21,31)
+  selectedStorePromoNoDuplicate <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE %in% enti) ,]
   #selectedStorePromoNoDuplicate2 <- selectedStorePromoNoDuplicate2[which(selectedStorePromoNoDuplicate2$ENTE %in% c(9,8,31,21,4) ) ,]
   
   # aggiunta nuova colonna contenente gli ultimi due charatteri della colonna settimana
@@ -111,19 +113,19 @@ if(!exists("storeOrderedByWeekPromo")){
   # selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),20] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]$'QUANTITA\' VENDUTA PROMO'
   
   
-  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),16] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]$'QUANTITA\' VENDUTA PROMO'
-  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]$'QUANTITA\' VENDUTA PROMO'
-  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),]$'QUANTITA\' VENDUTA PROMO'
-  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),19] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),]$'QUANTITA\' VENDUTA PROMO'
-  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),20] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]$'QUANTITA\' VENDUTA PROMO'
+  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[1]),16] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[1]),]$'QUANTITA\' VENDUTA PROMO'
+  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[2]),17] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[2]),]$'QUANTITA\' VENDUTA PROMO'
+  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[3]),18] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[3]),]$'QUANTITA\' VENDUTA PROMO'
+  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[4]),19] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[4]),]$'QUANTITA\' VENDUTA PROMO'
+  selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[5]),20] <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[5]),]$'QUANTITA\' VENDUTA PROMO'
   
   
   # prendo i dati dei solo enti che mi interessano
-  store1 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 4),]
-  store2 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 8),]
-  store3 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 9),]
-  store4 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 21),]
-  store5 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == 31),]
+  store1 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[1]),]
+  store2 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[2]),]
+  store3 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[3]),]
+  store4 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[4]),]
+  store5 <- selectedStorePromoNoDuplicate[which(selectedStorePromoNoDuplicate$ENTE == enti[5]),]
   
   # unisco tutta la tabella per ottenere quello che mi serve
   
@@ -156,102 +158,108 @@ if(!exists("storeOrderedByWeekPromo")){
   
   # TODO MEDIA SETTIMANA 52 - 53 E 1-53, VALORE MINIMO UNISCO
   
-  annoFastidio <- 2015
+  #annoFastidio <- 2015
+  annoFastidio <- sqldf("select distinct annono from tabelladate group by annono having count (settimanano)=53")
+  annoFastidio <- as.numeric(as.vector(t(annoFastidio)))
   settimanaFastidio <- 53
   weekBefore <- 52
   weekAfter <- 1
-  yearAfter <- 2016
+  
   
   if(53 %in% storeOrderedByWeekPromo$SETTIMANANO){
     
-    for(currentDept in unique(storeOrderedByWeekPromo$REPARTO)){
+    for(annoCiclo in annoFastidio){
       
-      for(currentSettore in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$REPARTO == currentDept),]$SETTORE) ){
+      for(currentDept in unique(storeOrderedByWeekPromo$REPARTO)){
         
-        for(currentGruppo in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore),]$GRUPPO) ){
+        for(currentSettore in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$REPARTO == currentDept),]$SETTORE) ){
           
-          for(currentFamiglia in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore & 
-                                                                      storeOrderedByWeekPromo$GRUPPO == currentGruppo ),]$FAMIGLIA) ){
+          for(currentGruppo in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore),]$GRUPPO) ){
             
-            valueCurrentweek <- storeOrderedByWeekPromo[which( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
-                                                                 as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
-                                                                 as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
+            for(currentFamiglia in unique(storeOrderedByWeekPromo[which(storeOrderedByWeekPromo$SETTORE == currentSettore & 
+                                                                        storeOrderedByWeekPromo$GRUPPO == currentGruppo ),]$FAMIGLIA) ){
+              yearAfter <- annoCiclo + 1
+              
+              valueCurrentweek <- storeOrderedByWeekPromo[which( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoCiclo &
+                                                                   as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
+                                                                   as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                                   as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                                   as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                                   as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)] 
+              
+              valueWeekBefore <- storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoCiclo &
+                                                                 as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekBefore &
+                                                                 as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
                                                                  as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
                                                                  as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
                                                                  as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)] 
-            
-            valueWeekBefore <- storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
-                                                               as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekBefore &
-                                                               as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                               as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                               as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                               as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)] 
-            
-            valueWeekAfter <- storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == yearAfter &
-                                                              as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekAfter &
-                                                              as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                              as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                              as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                              as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)] 
-            
-            meanBefore <- rowMeans(abs(valueWeekBefore - valueCurrentweek))
-            meanAfter <- rowMeans(abs(valueWeekAfter - valueCurrentweek))
-            
-            # print("banana")
-            
-            if(!(length(meanAfter) == 0)){
               
-              if(meanBefore < meanAfter){
-                print("inside")
-                # print(currentWeek)
+              valueWeekAfter <- storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == yearAfter &
+                                                                as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekAfter &
+                                                                as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                                as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                                as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                                as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)] 
+              
+              meanBefore <- rowMeans(abs(valueWeekBefore - valueCurrentweek))
+              meanAfter <- rowMeans(abs(valueWeekAfter - valueCurrentweek))
+              
+              # print("banana")
+              
+              if(!(length(meanAfter) == 0)){
                 
-                valueWeek <- rbind(valueCurrentweek,valueWeekBefore)
-                
-                # print(colMeans(valueWeek))
-                storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekBefore &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)]<- colMeans(valueWeek)
-                
-                storeOrderedByWeekPromo <- storeOrderedByWeekPromo[which(!( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
-                                                                              as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
-                                                                              as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                                              as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                                              as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                                              as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia)),] 
-                
-              }else{
-                print("inside2")
-                
-                # print(currentWeek)
-                
-                valueWeek <- rbind(valueCurrentweek,valueWeekAfter)
-                
-                # print(colMeans(valueWeek))
-                storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == yearAfter &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekAfter &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)]<- colMeans(valueWeek)
-                
-                storeOrderedByWeekPromo <- storeOrderedByWeekPromo[which(!( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoFastidio &
-                                                                              as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
-                                                                              as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
-                                                                              as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
-                                                                              as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
-                                                                              as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia)),] 
+                if(meanBefore < meanAfter){
+                  print("inside")
+                  # print(currentWeek)
+                  
+                  valueWeek <- rbind(valueCurrentweek,valueWeekBefore)
+                  
+                  # print(colMeans(valueWeek))
+                  storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoCiclo &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekBefore &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                  as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                  as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)]<- colMeans(valueWeek)
+                  
+                  storeOrderedByWeekPromo <- storeOrderedByWeekPromo[which(!( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoCiclo &
+                                                                                as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
+                                                                                as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                                                as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                                                as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                                                as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia)),] 
+                  
+                }else{
+                  print("inside2")
+                  
+                  # print(currentWeek)
+                  
+                  valueWeek <- rbind(valueCurrentweek,valueWeekAfter)
+                  
+                  # print(colMeans(valueWeek))
+                  storeOrderedByWeekPromo[which(as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == yearAfter &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == weekAfter &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                  as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                  as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                  as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia),c(7:11)]<- colMeans(valueWeek)
+                  
+                  storeOrderedByWeekPromo <- storeOrderedByWeekPromo[which(!( as.numeric(as.character(storeOrderedByWeekPromo$ANNONO)) == annoCiclo &
+                                                                                as.numeric(as.character(storeOrderedByWeekPromo$SETTIMANANO)) == settimanaFastidio &
+                                                                                as.numeric(as.character( storeOrderedByWeekPromo$REPARTO)) == currentDept &
+                                                                                as.numeric(as.character( storeOrderedByWeekPromo$SETTORE)) == currentSettore &
+                                                                                as.numeric(as.character(storeOrderedByWeekPromo$GRUPPO)) == currentGruppo & 
+                                                                                as.character(storeOrderedByWeekPromo$FAMIGLIA) == currentFamiglia)),] 
+                }
               }
             }
           }
         }
       }
+      
     }
     
   }
-  
 }
 #########################################################################################
 

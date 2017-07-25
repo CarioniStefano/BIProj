@@ -254,8 +254,10 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   
   mostPupolatedCluster <-which.max(table(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                          appoggioDepts2017$SETTORE == settoreSelected &
-                                         appoggioDepts2017$GRUPPO == gruppoSelected ) , ]$clusterVector2 ))
-   clusterCurrent <- mostPupolatedCluster
+                                         appoggioDepts2017$GRUPPO == gruppoSelected &
+                                           appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 ))
+    
+  clusterCurrent <- mostPupolatedCluster
   
   dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                          appoggioDepts2017$SETTORE == settoreSelected &
@@ -299,36 +301,6 @@ for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO =
   }
   
   test <- t(test[,-1])
-  
-  # test <- t(na.omit(data.frame(dataModel[1:23,6])))
-  # 
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,7]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,8]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,9]))))
-  # 
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,10]))))
-  
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,11]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,12]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,13]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,14]))))
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,15]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,16]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,17]))))
-  # 
-  # test <- rbind(test,t(na.omit(data.frame(dataModel[1:23,18]))))
-  
-  
-  
   
   rownames(training) <- NULL
   colnames(training) <- NULL

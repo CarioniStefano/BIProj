@@ -328,7 +328,8 @@ for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO 
         #creazione del modello di apprendimento
         #
         print("train")
-        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        mode(training) = "numeric"
+        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
         # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
         svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
         
@@ -389,7 +390,8 @@ for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO 
         colnames(test) <- NULL
         trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
         print("train 2")
-        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        mode(training) = "numeric"
+        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
         svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
         predsvm <- predict(svmBest, test[,-ncol(test)])
         
@@ -422,7 +424,8 @@ for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO 
         
         print("train 3")
         trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
-        svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=25, trControl=trControl)
+        mode(training) = "numeric"
+        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
         svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
         predsvm <- predict(svmBest, test[,-ncol(test)])
         predictedTS <- predsvm

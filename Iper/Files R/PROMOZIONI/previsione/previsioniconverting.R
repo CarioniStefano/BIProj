@@ -225,9 +225,12 @@ for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
 
 
 
-appoggioDeptsPred <- appoggioDepts2017[,c(1:4,6:7)]
+appoggioDeptsPred <- appoggioDepts2017[,c(1:7)]
+appoggioDeptsPred <- appoggioDeptsPred[which(appoggioDeptsPred$ANNONO == 2017),]
+appoggioDeptsPred <- appoggioDeptsPred[,c(1:4,5:7)]
 appoggioDeptsPred <- unique(appoggioDeptsPred)
 
+numeroRighe <- 0
 
 # clusterCurrent <- 6
 # repartoSelected <- 1
@@ -464,14 +467,14 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
               
             }
             effectiveValue <- effectiveValue[-1,]
-            
+            numeroRighe <- numeroRighe+nrow(t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
             test <- cbind(test, t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
-            
+
             test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
             colnames(test) <- c(colnames(effectiveValue),"FAMIGLIA","ENTE","REPARTO","SETTORE","GRUPPO","clusterVector2")
-            
+
             appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE","clusterVector2"), all.x = TRUE)
-            
+
             
           }else{
             print("TRAINING INSUFFICIENTE")

@@ -228,7 +228,7 @@ appoggioDeptsPred <- unique(appoggioDeptsPred)
 
 
 # clusterCurrent <- 6
-repartoSelected <- 1
+# repartoSelected <- 1
 # settoreSelected <- 10
 # gruppoSelected <- 1
 
@@ -304,6 +304,12 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
           if(nrow(training) > 1){
             
             
+            
+            if( (sum(training[,ncol(training)]) == 0) ){
+              training[,ncol(training)] <- index(training)*1 
+            }
+            
+            
             test <- data.frame(1:23)
             testNames <- data.frame(1:2)
             # SELEZIONO COLONNE DI TEST
@@ -338,11 +344,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             
             
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             }
             # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
@@ -358,7 +364,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             predictedTS <- predsvm
             print(predsvm)
-         
+            
             
             
             test[,ncol(test)] <- predictedTS
@@ -378,6 +384,10 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             training <- t(training[,-1])
             
+            if(( any(colSums(training) == 0) )){
+              training[,ncol(training)] <- index(training)*1 
+            }
+            
             rownames(training) <- NULL
             colnames(training) <- NULL
             
@@ -390,11 +400,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             print("train 2")
             mode(training) = "numeric"
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             
             
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             }
             # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
@@ -420,6 +430,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             training <- t(training[,-1])
             
+            if(( any(colSums(training) == 0) )){
+              training[,ncol(training)] <- index(training)*1 
+            }
+            
+            
             rownames(training) <- NULL
             colnames(training) <- NULL
             
@@ -431,11 +446,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
             mode(training) = "numeric"
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             
             
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             }
             # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
@@ -455,8 +470,12 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             }
             effectiveValue <- effectiveValue[-1,]
             
+            test <- cbind(test, t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
             
+            test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
+            colnames(test) <- c(colnames(effectiveValue),"FAMIGLIA","ENTE","REPARTO","SETTORE","GRUPPO","clusterVector2")
             
+            appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE"), all.x = TRUE)
             
             
           }else{
@@ -472,70 +491,3 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
   }
 }
 
-
-# 
-# plot(listAllCLustering[[1]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][1,],listAllCLustering[[1]][6,])))
-# lines(listAllCLustering[[1]][6,],type="b",col="red")
-# 
-# plot(listAllCLustering[[1]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][2,],listAllCLustering[[1]][7,])))
-# lines(listAllCLustering[[1]][7,],type="b",col="red")
-# 
-# plot(listAllCLustering[[1]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][3,],listAllCLustering[[1]][8,])))
-# lines(listAllCLustering[[1]][8,],type="b",col="red")
-# 
-# plot(listAllCLustering[[1]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][4,],listAllCLustering[[1]][9,])))
-# lines(listAllCLustering[[1]][9,],type="b",col="red")
-# 
-# plot(listAllCLustering[[1]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[1]][5,],listAllCLustering[[1]][10,])))
-# lines(listAllCLustering[[1]][10,],type="b",col="red")
-# 
-# 
-# 
-# 
-# plot(listAllCLustering[[2]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][1,],listAllCLustering[[2]][13,])))
-# lines(listAllCLustering[[2]][13,],type="b",col="red")
-# 
-# plot(listAllCLustering[[2]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][2,],listAllCLustering[[2]][14,])))
-# lines(listAllCLustering[[2]][14,],type="b",col="red")
-# 
-# plot(listAllCLustering[[2]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][3,],listAllCLustering[[2]][15,])))
-# lines(listAllCLustering[[2]][15,],type="b",col="red")
-# 
-# plot(listAllCLustering[[2]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[2]][4,],listAllCLustering[[2]][16,])))
-# lines(listAllCLustering[[2]][16,],type="b",col="red")
-# 
-# 
-# 
-# plot(listAllCLustering[[4]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][1,],listAllCLustering[[4]][13,])))
-# lines(listAllCLustering[[4]][13,],type="b",col="red")
-# 
-# plot(listAllCLustering[[4]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][3,],listAllCLustering[[4]][15,])))
-# lines(listAllCLustering[[4]][15,],type="b",col="red")
-# 
-# plot(listAllCLustering[[4]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][5,],listAllCLustering[[4]][17,])))
-# lines(listAllCLustering[[4]][17,],type="b",col="red")
-# 
-# plot(listAllCLustering[[4]][7,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][7,],listAllCLustering[[4]][19,])))
-# lines(listAllCLustering[[4]][19,],type="b",col="red")
-# 
-# plot(listAllCLustering[[4]][9,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[4]][9,],listAllCLustering[[4]][21,])))
-# lines(listAllCLustering[[4]][21,],type="b",col="red")
-# 
-# 
-# 
-# plot(listAllCLustering[[5]][1,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][1,],listAllCLustering[[5]][6,])))
-# lines(listAllCLustering[[5]][6,],type="b",col="red")
-# 
-# plot(listAllCLustering[[5]][2,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][2,],listAllCLustering[[5]][7,])))
-# lines(listAllCLustering[[5]][7,],type="b",col="red")
-# 
-# plot(listAllCLustering[[5]][3,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][3,],listAllCLustering[[5]][8,])))
-# lines(listAllCLustering[[5]][8,],type="b",col="red")
-# 
-# plot(listAllCLustering[[5]][4,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][4,],listAllCLustering[[5]][9,])))
-# lines(listAllCLustering[[5]][9,],type="b",col="red")
-# 
-# plot(listAllCLustering[[5]][5,],type="b",col="blue", ylim=c(0,max(listAllCLustering[[5]][5,],listAllCLustering[[5]][10,])))
-# lines(listAllCLustering[[5]][10,],type="b",col="red")
-# 
-# #   

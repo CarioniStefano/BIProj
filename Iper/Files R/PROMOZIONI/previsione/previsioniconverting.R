@@ -232,224 +232,241 @@ repartoSelected <- 1
 # settoreSelected <- 10
 # gruppoSelected <- 1
 
-for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected),]$SETTORE)){
+for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
+  print(paste("REPARTO",repartoSelected))
   
-  print(paste("Settore",settoreSelected))
   
-  for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
-    print(paste("gruppo",gruppoSelected))
+  for(settoreSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected),]$SETTORE)){
     
+    print(paste("Settore",settoreSelected))
     
-    # View(appoggioDepts2017)
-    # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
-    # appoggioDepts2017 <- appoggioDepts2017[,0:22]
-    
-    
-    
-    clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
-                                                    appoggioDepts2017$SETTORE == settoreSelected &
-                                                    appoggioDepts2017$GRUPPO == gruppoSelected &
-                                                    appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 )
-    print(clusterList)
-    for(clusterCurrent in clusterList){
-      print(paste("cluster",clusterCurrent))
+    for(gruppoSelected in unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected & appoggioDepts2017$SETTORE == settoreSelected),]$GRUPPO)){
+      print(paste("gruppo",gruppoSelected))
+      
+      
+      # View(appoggioDepts2017)
+      # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
+      # appoggioDepts2017 <- appoggioDepts2017[,0:22]
       
       
       
-      dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
-                                             appoggioDepts2017$SETTORE == settoreSelected &
-                                             appoggioDepts2017$GRUPPO == gruppoSelected &
-                                             appoggioDepts2017$clusterVector2 == clusterCurrent) , c(4:6,8:ncol(appoggioDepts2017))])
-      
-      
-      
-      
-      
-      
-      
-      
-      dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
-      
-      dataModel <- dataModel[-2,]
-      
-      dataModelFamAndEnte <- dataModel[1:2,]
-      dataModel <- dataModel [-c(1,2),]
-      
-      class(dataModel) <- "numeric"
-      colnames(dataModel) <- 1:ncol(dataModel)
-      
-      
-      # class(dataModel) <- "numeric"
-      
-      
-      # colnames(dataModel) <- 1:ncol(dataModel)
-      # C'è CORRISPONDENZA TRA LA COLONNA DEL DATA MODEL E LA RIGA DATAMODELFAMANENTE'
-      if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+      clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                                      appoggioDepts2017$SETTORE == settoreSelected &
+                                                      appoggioDepts2017$GRUPPO == gruppoSelected &
+                                                      appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 )
+      print(clusterList)
+      for(clusterCurrent in clusterList){
+        print(paste("cluster",clusterCurrent))
         
-        training <- data.frame(1:23)
         
-        # SELEZIONO COLONNE DI TRAINING
-        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+        
+        dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
+                                               appoggioDepts2017$SETTORE == settoreSelected &
+                                               appoggioDepts2017$GRUPPO == gruppoSelected &
+                                               appoggioDepts2017$clusterVector2 == clusterCurrent) , c(4:6,8:ncol(appoggioDepts2017))])
+        
+        
+        
+        
+        
+        
+        
+        
+        dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
+        
+        dataModel <- dataModel[-2,]
+        
+        dataModelFamAndEnte <- dataModel[1:2,]
+        dataModel <- dataModel [-c(1,2),]
+        
+        class(dataModel) <- "numeric"
+        colnames(dataModel) <- 1:ncol(dataModel)
+        
+        
+        # class(dataModel) <- "numeric"
+        
+        
+        # colnames(dataModel) <- 1:ncol(dataModel)
+        # C'è CORRISPONDENZA TRA LA COLONNA DEL DATA MODEL E LA RIGA DATAMODELFAMANENTE'
+        if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
+          
+          training <- data.frame(1:23)
+          
+          # SELEZIONO COLONNE DI TRAINING
+          for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+            
+            
+            training<- cbind(training, as.matrix(dataModel[1:23,colAssa])  )
+            
+          }
+          
+          training <- t(training[,-1])
+          if(nrow(training) > 1){
+            
+            
+            test <- data.frame(1:23)
+            testNames <- data.frame(1:2)
+            # SELEZIONO COLONNE DI TEST
+            for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+              
+              test<- cbind(test, as.matrix(dataModel[1:23,colAssa])  )
+              testNames <- cbind(testNames, dataModelFamAndEnte[,as.numeric(colAssa)])
+              
+            }
+            
+            test <- t(test[,-1])
+            testNames <- testNames[,-1]
+            
+            rownames(training) <- NULL
+            colnames(training) <- NULL
+            
+            
+            rownames(test) <- NULL
+            colnames(test) <- NULL
+            #fine creazione del test set
+            trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+            # bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
+            preProc <- c("center","scale")                #imposta i parametri per il preprocessing
+            #setta uno scenario casuale
+            # indexTrn <- ncol(training)                    # ???
+            
+            #creazione del modello di apprendimento
+            #
+            print("train")
+            mode(training) = "numeric"
+            
+            
+            
+            svmFit <- 0
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            
+            
+            if (class(svmFit) == "numeric"){
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            }
+            # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
+            svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+            
+            
+            if(nrow(test) == 1){
+              
+              test <- rbind(test,test)
+            }
+            
+            predsvm <- predict(svmBest, test[,-ncol(test)])
+            actualTS <- test[,ncol(test)]
+            
+            predictedTS <- predsvm
+            print(predsvm)
+         
+            
+            
+            test[,ncol(test)] <- predictedTS
+            test <- cbind(test,0)
+            cbind(actualTS,predictedTS)
+            par(mfrow = c(1, 1))
+            
+            training <- data.frame(1:24)
+            
+            # SELEZIONO COLONNE DI TRAINING
+            for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+              
+              
+              training<- cbind(training, as.matrix(dataModel[1:24,colAssa])  )
+              
+            }
+            
+            training <- t(training[,-1])
+            
+            rownames(training) <- NULL
+            colnames(training) <- NULL
+            
+            
+            
+            
+            rownames(test) <- NULL
+            colnames(test) <- NULL
+            trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+            print("train 2")
+            mode(training) = "numeric"
+            svmFit <- 0
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            
+            
+            if (class(svmFit) == "numeric"){
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            }
+            # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
+            svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+            predsvm <- predict(svmBest, test[,-ncol(test)])
+            
+            predictedTS <- predsvm
+            print(predsvm)
+            
+            
+            
+            test[,ncol(test)] <- predictedTS
+            test <- cbind(test,0)
+            
+            
+            training <- data.frame(1:25)
+            
+            # SELEZIONO COLONNE DI TRAINING
+            for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
+              
+              training<- cbind(training, as.matrix(dataModel[1:25,colAssa])  )
+              
+            }
+            
+            training <- t(training[,-1])
+            
+            rownames(training) <- NULL
+            colnames(training) <- NULL
+            
+            
+            rownames(test) <- NULL
+            colnames(test) <- NULL
+            
+            print("train 3")
+            trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
+            mode(training) = "numeric"
+            svmFit <- 0
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            
+            
+            if (class(svmFit) == "numeric"){
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)})
+            }
+            # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
+            svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
+            predsvm <- predict(svmBest, test[,-ncol(test)])
+            predictedTS <- predsvm
+            print(predsvm)
+            
+            
+            test[,ncol(test)] <- predictedTS
+            
+            effectiveValue <- t(data.frame(1:25))
+            
+            for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
+              
+              effectiveValue <- rbind(effectiveValue,t(na.omit(data.frame(dataModel[1:25,colAssa])) ) )
+              
+            }
+            effectiveValue <- effectiveValue[-1,]
+            
+            
+            
+            
+            
+          }else{
+            print("TRAINING INSUFFICIENTE")
+          }
           
           
-          training<- cbind(training, as.matrix(dataModel[1:23,colAssa])  )
-          
+        }else{
+          print("0 test")
         }
-        
-        training <- t(training[,-1])
-        
-        
-        test <- data.frame(1:23)
-        testNames <- data.frame(1:2)
-        # SELEZIONO COLONNE DI TEST
-        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
-          
-          test<- cbind(test, as.matrix(dataModel[1:23,colAssa])  )
-          testNames <- cbind(testNames, dataModelFamAndEnte[,as.numeric(colAssa)])
-          
-        }
-        
-        test <- t(test[,-1])
-        testNames <- testNames[,-1]
-        
-        rownames(training) <- NULL
-        colnames(training) <- NULL
-        
-        
-        rownames(test) <- NULL
-        colnames(test) <- NULL
-        #fine creazione del test set
-        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
-        # bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-        preProc <- c("center","scale")                #imposta i parametri per il preprocessing
-        #setta uno scenario casuale
-        # indexTrn <- ncol(training)                    # ???
-        
-        #creazione del modello di apprendimento
-        #
-        print("train")
-        mode(training) = "numeric"
-        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
-        # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
-        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-        
-        
-        if(nrow(test) == 1){
-          
-          test <- rbind(test,test)
-        }
-        
-        predsvm <- predict(svmBest, test[,-ncol(test)])
-        actualTS <- test[,ncol(test)]
-        
-        predictedTS <- predsvm
-        print(predsvm)
-        
-        
-        
-        
-        # plot(training[1,],type="b",col="blue", ylim=c(0,2000))
-        # lines(training[2,],type="b",col="black")
-        # lines(training[3,],type="b",col="green")
-        # lines(training[4,],type="b",col="orange")
-        # lines(training[5,],type="b",col="red")
-        # 
-        # 
-        # 
-        # plot(test[1,],type="b",col="blue", ylim=c(0,2000))
-        # lines(test[2,],type="b",col="black")
-        # lines(test[3,],type="b",col="green")
-        # lines(test[4,],type="b",col="orange")
-        # lines(test[5,],type="b",col="red")
-        
-        
-        test[,ncol(test)] <- predictedTS
-        test <- cbind(test,0)
-        cbind(actualTS,predictedTS)
-        par(mfrow = c(1, 1))
-        
-        training <- data.frame(1:24)
-        
-        # SELEZIONO COLONNE DI TRAINING
-        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
-          
-          
-          training<- cbind(training, as.matrix(dataModel[1:24,colAssa])  )
-          
-        }
-        
-        training <- t(training[,-1])
-        
-        rownames(training) <- NULL
-        colnames(training) <- NULL
-        
-        
-        
-        
-        rownames(test) <- NULL
-        colnames(test) <- NULL
-        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
-        print("train 2")
-        mode(training) = "numeric"
-        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
-        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-        predsvm <- predict(svmBest, test[,-ncol(test)])
-        
-        predictedTS <- predsvm
-        print(predsvm)
-        
-        
-        
-        test[,ncol(test)] <- predictedTS
-        test <- cbind(test,0)
-        
-        
-        training <- data.frame(1:25)
-        
-        # SELEZIONO COLONNE DI TRAINING
-        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) == 0]){
-          
-          training<- cbind(training, as.matrix(dataModel[1:25,colAssa])  )
-          
-        }
-        
-        training <- t(training[,-1])
-        
-        rownames(training) <- NULL
-        colnames(training) <- NULL
-        
-        
-        rownames(test) <- NULL
-        colnames(test) <- NULL
-        
-        print("train 3")
-        trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
-        mode(training) = "numeric"
-        svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
-        svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
-        predsvm <- predict(svmBest, test[,-ncol(test)])
-        predictedTS <- predsvm
-        print(predsvm)
-        
-        
-        test[,ncol(test)] <- predictedTS
-        
-        effectiveValue <- t(data.frame(1:25))
-        
-        for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
-          
-          effectiveValue <- rbind(effectiveValue,t(na.omit(data.frame(dataModel[1:25,colAssa])) ) )
-          
-        }
-        effectiveValue <- effectiveValue[-1,]
-        
-        
-        
-        
-        
-        
-      }else{
-        print("0 test")
       }
     }
   }

@@ -36,7 +36,7 @@ clusterVector2017 <- c()
 # tempDept2 <- tsPromo[which(tsPromo$REPARTO == 1 & tsPromo$SETTORE == 10 & tsPromo$GRUPPO == 1),]
 
 
-tempDept3 <- tsPromo[which(tsPromo$REPARTO == 1),]
+# tempDept3 <- tsPromo[which(tsPromo$REPARTO == 1),]
 
 for(cycleReparto in unique(tsPromo$REPARTO)){
   
@@ -45,6 +45,8 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
     for(cycleGruppo in unique(tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore),]$GRUPPO) ){
       
       for (currentFamily in unique(tsPromo[which( tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore & tsPromo$GRUPPO == cycleGruppo),]$FAMIGLIA) ) {
+        
+        
         
         tempDept2 <- tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore &
                                      tsPromo$GRUPPO == cycleGruppo &
@@ -59,11 +61,12 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
         print(paste("SETTORE", cycleSettore))
         print(paste("GRUPPO", cycleGruppo))
         print(paste("FAMILY", currentFamily))
-        # print(table(reversedStoreOrderedByWeek2017$FAMIGLIA))
-        reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
         
+        # CONTIENE SERIES STORICA 2017 SU RIGA, PER OGNI COMBINAZIONE
+        reversedStoreForCluster2017 <- reversedStoreOrderedByWeek2017
+        # DUPICO RIGHE SERIE STORICHE
         for(currentEnte in unique(clusterDataframe2$ENTE)){
-          #print((match(storeNo,storesNumbersSecond)))
+          
           reversedStoreForCluster2017<- rbind(reversedStoreForCluster2017 , reversedStoreOrderedByWeek2017[(6+(match(currentEnte,unique(clusterDataframe2$ENTE)))),])
           
         }
@@ -74,6 +77,7 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
         
         print( listAllReparto[[match(cycleReparto, unique(tsPromo$REPARTO))]][[ match( cycleSettore , unique(tsPromo[ which( tsPromo$REPARTO == cycleReparto ) , ]$SETTORE) )]][[ match(cycleGruppo,unique(tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore),]$GRUPPO)) ]][[5]][[ match(cycleGruppo,unique(tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore),]$GRUPPO)) ]] )
         
+        # ESTRAGGO LA MIGLIORE CLUSTERIZZAZIONE
         clusterVectorForGraph <- append(clusterVectorForGraph, listAllReparto[[match(cycleReparto, unique(tsPromo$REPARTO))]][[ match( cycleSettore , unique(tsPromo[ which( tsPromo$REPARTO == cycleReparto ) , ]$SETTORE) )]][[ match(cycleGruppo,unique(tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore),]$GRUPPO)) ]][[5]][[ match(cycleGruppo,unique(tsPromo[which(tsPromo$REPARTO == cycleReparto & tsPromo$SETTORE == cycleSettore),]$GRUPPO)) ]]  )
         
         
@@ -85,11 +89,7 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
         
         
         
-        # 
-        # print(match(deptSelected, deptNumbersSecond))
-        # print(max(clusterNo))
-        # print(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes)
-        
+        # CALCOLO MEDOIDI CLUSTER
         for(clst in clusterNo){
           # print(clst)
           clusterMedoids <- rbind(clusterMedoids, (colMeans(appoggioDepts2[which(appoggioDepts2$REPARTO == cycleReparto & 
@@ -99,29 +99,30 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
         }
         
         
-        # clusterCentroids<- rbind(clusterCentroids, unname(listAllDeptYear[[match(deptSelected, deptNumbersSecond)]][[1]][[max(clusterNo)]]$prototypes ))
         
-        # names(clusterMedoids)<- names(clusterCentroids)
-        
+        # TENGO SOLO I MEDOIDI DELLE SETTIMANE CHE HO NEL 2017
         clusterMedoids <- clusterMedoids[,0:ncol(reversedStoreForCluster2017)]
-        # print(clusterMedoids)
-        
-        # clusterCentroids <- clusterCentroids[,0:ncol(reversedStoreForCluster2017)]
         
         
+        # SOLITO GIOCO DEI NOMI PER fare rbind
         colnames(clusterMedoids) <- 1:ncol(clusterMedoids)
         names(reversedStoreForCluster2017) <-  names(clusterMedoids)
         colnames(reversedStoreForCluster2017) <- colnames(clusterMedoids)
         
         # reversedStoreForCluster2017 <- unname(reversedStoreForCluster2017)
+        
+        
+        # TOLGO RIGHE DUPLICATE
         reversedStoreForCluster2017 <- reversedStoreForCluster2017[(nrow(reversedStoreOrderedByWeek2017)+1):nrow(reversedStoreForCluster2017),]
+        # mi assicuro di avere solo valori numerici
         class(reversedStoreForCluster2017) <- "numeric"
-        # reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterCentroids)
+        # APPENDO I MEDOIDI DEI CLUSTER IN FONDO ALLA MATRICE
         reversedStoreForCluster2017 <- rbind (reversedStoreForCluster2017,clusterMedoids)
+        
         reversedStoreForCluster2017 <- as.matrix(reversedStoreForCluster2017)
         
         
-        
+        # CALCOLO DISTANZE COSENO TRA MEDOIDI DEI CLUSTER E LE SERIE STORICHE DEL 2017
         cosineDistanceMatrix2017 <- matrix(nrow=nrow(reversedStoreForCluster2017),ncol=nrow(reversedStoreForCluster2017))
         
         for (x in 1:(nrow(reversedStoreForCluster2017)-max(clusterNo))){
@@ -136,6 +137,7 @@ for(cycleReparto in unique(tsPromo$REPARTO)){
         
         cosineDistanceMatrix2017 <- na.omit(cosineDistanceMatrix2017[,colSums(is.na(cosineDistanceMatrix2017))<nrow(cosineDistanceMatrix2017)])
         
+        # ASSEGNO IL NUMERO DI CLUSTER USANDO IL MINIMO DELLE DISTANZE
         clusterVector2017 <- append(clusterVector2017, c(which.min(cosineDistanceMatrix2017[1,]) , which.min(cosineDistanceMatrix2017[2,]) , which.min(cosineDistanceMatrix2017[3,]) , 
                                                          which.min(cosineDistanceMatrix2017[4,]) , which.min(cosineDistanceMatrix2017[5,])) )
         print(clusterVector2017)
@@ -182,7 +184,7 @@ clusterDataframeAllin <- sqldf("SELECT *  FROM clusterDataframeAllin order by RE
 
 appoggioDepts2017 <- data.frame()
 
-
+# CREO DATA FRAME CONTENENTE TUTTI LE TIMESERIES DI TUTTI GLI ANNI CON IL CLUSTER ASSOCIATO 2017 COMPRESO
 
 for(currentReparto in unique(clusterDataframeAllin$REPARTO) ){
   
@@ -244,22 +246,21 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
       print(paste("gruppo",gruppoSelected))
       
       
-      # View(appoggioDepts2017)
-      # appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
-      # appoggioDepts2017 <- appoggioDepts2017[,0:22]
       
       
+      # QUALI SONO I CLUSTER PER QUESTA COMBINAZIONE NEL 2017?
       
       clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                                       appoggioDepts2017$SETTORE == settoreSelected &
                                                       appoggioDepts2017$GRUPPO == gruppoSelected &
                                                       appoggioDepts2017$ANNONO == 2017) , ]$clusterVector2 )
-      print(clusterList)
+      # print(clusterList)
+      
       for(clusterCurrent in clusterList){
         print(paste("cluster",clusterCurrent))
         
         
-        
+        # DATA MODEL CONTIENE PER IL CLUSTER CORRENTE DELLA COMBINAZIONE, TUTTE LE SERIE STORICHE (SIA 2014,2015 E 2016 CHE 2017)
         dataModel <-(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
                                                appoggioDepts2017$SETTORE == settoreSelected &
                                                appoggioDepts2017$GRUPPO == gruppoSelected &
@@ -270,24 +271,24 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
         
         
         
-        
+        # TRASPONGO E SPOSTO I VALORI DEL 2017 A DESTRA
         
         dataModel <- t(sqldf("SELECT * FROM dataModel ORDER BY ANNONO"))
         
         dataModel <- dataModel[-2,]
         
+        
+        # MI SALVO I DATI DELLA GERARCHIA PER SALVARE NEL POSTO GIUSTO PIù AVANTI
+        # TODO PERDO L'ANNO?
         dataModelFamAndEnte <- dataModel[1:2,]
         dataModel <- dataModel [-c(1,2),]
         
         class(dataModel) <- "numeric"
         colnames(dataModel) <- 1:ncol(dataModel)
         
-        
-        # class(dataModel) <- "numeric"
-        
-        
-        # colnames(dataModel) <- 1:ncol(dataModel)
         # C'è CORRISPONDENZA TRA LA COLONNA DEL DATA MODEL E LA RIGA DATAMODELFAMANENTE'
+        
+        # C'è ALMENO UNA COLONNA 2017 PER QUESTA GERARCHIA E CLUSTER?
         if(length( colnames(dataModel)[colSums(is.na(dataModel)) > 0] ) != 0){
           
           training <- data.frame(1:23)
@@ -301,10 +302,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
           }
           
           training <- t(training[,-1])
+          # SE C'è PIù DI UNA RIGA DI TRAINING CONTINUO, ALTRIMENTI SKIPPO PERCHè NON HO ABBASTANZA DATI
           if(nrow(training) > 1){
             
             
-            
+            # SE L'ULITMA COLONNA (TARGET) è COMPOSTA DA SOLI 0, MODIFICALA
             if( (sum(training[,ncol(training)]) == 0) ){
               training[,ncol(training)] <- index(training)*1 
             }
@@ -312,6 +314,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             test <- data.frame(1:23)
             testNames <- data.frame(1:2)
+            
             # SELEZIONO COLONNE DI TEST
             for(colAssa in colnames(dataModel)[colSums(is.na(dataModel)) > 0]){
               
@@ -325,32 +328,22 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             rownames(training) <- NULL
             colnames(training) <- NULL
-            
-            
             rownames(test) <- NULL
             colnames(test) <- NULL
-            #fine creazione del test set
-            trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
-            # bootControl <- trainControl(number=15)    #definisce il comportamento di apprendimento (k-folds cross validation?)
-            preProc <- c("center","scale")                #imposta i parametri per il preprocessing
-            #setta uno scenario casuale
-            # indexTrn <- ncol(training)                    # ???
             
-            #creazione del modello di apprendimento
-            #
+            #CROSS VALIDATION
+            # trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
             print("train")
             mode(training) = "numeric"
-            
-            
-            
+            #   ALLENO MODELLO
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
-            
-            
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 10)})
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 10)})
             }
             # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
+            
+            # SELEZIONO IL MODELLO MIGLIORE TRA QUELLI GENERATI
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
             
             
@@ -359,7 +352,9 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
               test <- rbind(test,test)
             }
             
+            # ESEGUO PREVISIONE SUI DATI DI TEST
             predsvm <- predict(svmBest, test[,-ncol(test)])
+            # INCOLLO IN FONDO AI DATI DI TEST IL VALORE DELLA PREVISIONE, PER UTILIZZARLA NELLA PROSSIMA PREVISIONE
             actualTS <- test[,ncol(test)]
             
             predictedTS <- predsvm
@@ -369,7 +364,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             test[,ncol(test)] <- predictedTS
             test <- cbind(test,0)
-            cbind(actualTS,predictedTS)
+            
             par(mfrow = c(1, 1))
             
             training <- data.frame(1:24)
@@ -475,7 +470,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
             colnames(test) <- c(colnames(effectiveValue),"FAMIGLIA","ENTE","REPARTO","SETTORE","GRUPPO","clusterVector2")
             
-            appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE"), all.x = TRUE)
+            appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE","clusterVector2"), all.x = TRUE)
             
             
           }else{

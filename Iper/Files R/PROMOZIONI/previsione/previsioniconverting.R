@@ -6,7 +6,7 @@
 # prendo i prototipi dei cluster, calcolo la distanza coseno 
 
 require(zoo)
-
+options(scipen=999)
 set.seed(4844)
 
 shift <- function(x, n, invert=FALSE, default=NA){
@@ -229,6 +229,7 @@ appoggioDeptsPred <- appoggioDepts2017[,c(1:7)]
 appoggioDeptsPred <- appoggioDeptsPred[which(appoggioDeptsPred$ANNONO == 2017),]
 appoggioDeptsPred <- appoggioDeptsPred[,c(1:4,5:7)]
 appoggioDeptsPred <- unique(appoggioDeptsPred)
+totalTest <- data.frame()
 
 numeroRighe <- 0
 
@@ -250,7 +251,6 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
       
       
       
-      
       # QUALI SONO I CLUSTER PER QUESTA COMBINAZIONE NEL 2017?
       
       clusterList <- unique(appoggioDepts2017[which(appoggioDepts2017$REPARTO == repartoSelected &
@@ -261,6 +261,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
       
       for(clusterCurrent in clusterList){
         print(paste("cluster",clusterCurrent))
+        raddoppiata <- FALSE
         
         
         # DATA MODEL CONTIENE PER IL CLUSTER CORRENTE DELLA COMBINAZIONE, TUTTE LE SERIE STORICHE (SIA 2014,2015 E 2016 CHE 2017)
@@ -351,8 +352,9 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             
             
             if(nrow(test) == 1){
-              
+              raddoppiata <- TRUE
               test <- rbind(test,test)
+              dataModelFamAndEnte <- cbind(dataModelFamAndEnte,dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )])
             }
             
             # ESEGUO PREVISIONE SUI DATI DI TEST
@@ -404,6 +406,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             if (class(svmFit) == "numeric"){
               try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 10)})
             }
+            
             # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
             predsvm <- predict(svmBest, test[,-ncol(test)])
@@ -467,14 +470,35 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
               
             }
             effectiveValue <- effectiveValue[-1,]
+            
+            if(raddoppiata){
+              print("test prima di rimozione")
+              print(test)
+              # testv2 <- test
+              # test <- test[-1,]
+              test <- cbind(test, rbind(t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]), t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]) ))
+              
+              test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
+              effectiveValue <- rbind(effectiveValue,effectiveValue)
+              print("test dopo modifica")
+              print(test)
+              # dataModelFamAndEnte <- cbind(dataModelFamAndEnte,dataModelFamAndEnte[,ncol(dataModelFamAndEnte)])
+            }else{
+              test <- cbind(test, t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
+              
+              test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
+              
+            }
+            
             numeroRighe <- numeroRighe+nrow(t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
-            test <- cbind(test, t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
-
-            test <- cbind(test, repartoSelected,settoreSelected,gruppoSelected,clusterCurrent)
+            
+            
             colnames(test) <- c(colnames(effectiveValue),"FAMIGLIA","ENTE","REPARTO","SETTORE","GRUPPO","clusterVector2")
-
-            appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE","clusterVector2"), all.x = TRUE)
-
+            
+            totalTest <- rbind(totalTest,test)
+            
+            # appoggioDeptsPred <- merge(x = appoggioDeptsPred, y = test, by=c("REPARTO","SETTORE","GRUPPO","FAMIGLIA","ENTE","clusterVector2"), all.x = TRUE)
+            
             
           }else{
             print("TRAINING INSUFFICIENTE")
@@ -489,3 +513,27 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
   }
 }
 
+
+totalTest <- unique(totalTest)
+appoggioDeptsPred <- sqldf("SELECT * FROM appoggioDeptsPred AS ADP LEFT OUTER JOIN totalTest AS TT ON  ADP.REPARTO = TT.REPARTO AND ADP.SETTORE = TT.SETTORE AND ADP.GRUPPO = TT.GRUPPO AND ADP.FAMIGLIA = TT.FAMIGLIA AND ADP.ENTE = TT.ENTE")
+appoggioDeptsPred <- appoggioDeptsPred[,1:(ncol(appoggioDeptsPred)-6)]
+appoggioDeptsPred[, 8:32] <- sapply(appoggioDeptsPred[, 8:32], as.numeric)
+
+appoggioDepts2017real <- appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$ANNONO)) == 2017 ),]
+
+blabla <- appoggioDepts2017real[-which(is.na(appoggioDeptsPred[,ncol(appoggioDeptsPred)]), arr.ind=TRUE),]
+appoggioDeptsPred <- appoggioDeptsPred[-which(is.na(appoggioDeptsPred[,ncol(appoggioDeptsPred)]), arr.ind=TRUE),]
+blabla <- blabla [,0:ncol(appoggioDeptsPred)]
+
+rowMeans(abs((actual-predicted)/actual) * 100)
+
+assss <- (abs( ( blabla[,(ncol(blabla)-2)] - appoggioDeptsPred[,(ncol(appoggioDeptsPred)-2)]) / blabla[,(ncol(blabla)-2)]) )
+
+mean(head(sort(assss),-40))
+
+rmse(actual = blabla[,(ncol(blabla)-2):ncol(blabla)] , predicted = appoggioDeptsPred[,(ncol(appoggioDeptsPred)-2):ncol(appoggioDeptsPred)] )
+
+
+plot( appoggioDepts2017[64,8:ncol(appoggioDepts2017)], type="n" ,col="blue")
+
+lines(appoggioDepts2017[69,8:ncol(appoggioDepts2017)],type="b",col="red")

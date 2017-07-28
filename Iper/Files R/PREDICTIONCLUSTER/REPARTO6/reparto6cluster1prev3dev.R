@@ -176,8 +176,8 @@ for(repartoCurrent in unique(clusterDeptsAllin$REPARTO)){
   
 }
 
-clusterCurrent <- 2
-deptSelected <- 6
+clusterCurrent <- 1
+deptSelected <- 3
 
 # View(appoggioDepts2017)
 appoggioDepts2017 <- (appoggioDepts2017[with(appoggioDepts2017, order(REPARTO, ANNONO , ENTE)), ])
@@ -188,12 +188,12 @@ assa <-t(appoggioDepts2017[which(as.numeric(as.character(appoggioDepts2017$REPAR
                                    as.numeric(as.character(appoggioDepts2017$clusterVector)) == as.numeric(clusterCurrent)),5:ncol(appoggioDepts2017)])
 
 
-predictData2 <- data.frame(1:19)
+predictData2 <- data.frame(1:22)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:15)){
   
-  predictData2<- cbind(predictData2, as.matrix(assa[1:19,colAssa])  )
+  predictData2<- cbind(predictData2, as.matrix(assa[1:22,colAssa])  )
 
 }
 
@@ -201,17 +201,17 @@ predictData2 <- t(predictData2[,-1])
 
 # colnames(predictData2) <- c("nolag","lag1","lag2")
 
-test <- t(na.omit(data.frame(assa[1:19,7])))
+test <- t(na.omit(data.frame(assa[1:22,16])))
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:19,8]))))
+test <- rbind(test,t(na.omit(data.frame(assa[1:22,17]))))
 
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:19,9]))))
+test <- rbind(test,t(na.omit(data.frame(assa[1:22,18]))))
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:19,10]))))
+test <- rbind(test,t(na.omit(data.frame(assa[1:22,19]))))
 
-test <- rbind(test,t(na.omit(data.frame(assa[1:19,11]))))
-test <- rbind(test,t(na.omit(data.frame(assa[1:19,12]))))
+# test <- rbind(test,t(na.omit(data.frame(assa[1:22,11]))))
+# test <- rbind(test,t(na.omit(data.frame(assa[1:22,12]))))
 
 
 # predictFrame <- (c (as.vector(as.matrix(assa[,(1:6)])) , na.omit(as.vector(as.matrix(assa[,9])))))
@@ -239,7 +239,7 @@ indexTrn <- ncol(training)                    # ???
 
 #creazione del modello di apprendimento
 #
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=65, trnControl=bootControl)
 # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
@@ -254,12 +254,12 @@ cbind(actualTS,predictedTS)
 par(mfrow = c(1, 1))
 
 
-predictData2 <- data.frame(1:20)
+predictData2 <- data.frame(1:23)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:15)){
   
-  predictData2<- cbind(predictData2, as.matrix(assa[1:20,colAssa])  )
+  predictData2<- cbind(predictData2, as.matrix(assa[1:23,colAssa])  )
   
 }
 
@@ -267,7 +267,7 @@ predictData2 <- t(predictData2[,-1])
 
 training <- predictData2
 
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=65, trnControl=bootControl)
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
 
@@ -279,12 +279,12 @@ test[,ncol(test)] <- predictedTS
 test <- cbind(test,0)
 
 
-predictData2 <- data.frame(1:21)
+predictData2 <- data.frame(1:24)
 
 
-for(colAssa in c(1:6)){
+for(colAssa in c(1:15)){
   
-  predictData2<- cbind(predictData2, as.matrix(assa[1:21,colAssa])  )
+  predictData2<- cbind(predictData2, as.matrix(assa[1:24,colAssa])  )
   
 }
 
@@ -292,31 +292,31 @@ predictData2 <- t(predictData2[,-1])
 
 training <- predictData2
 
-svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=15, trnControl=bootControl)
+svmFit <- train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", tuneLength=65, trnControl=bootControl)
 svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
 predsvm <- predict(svmBest, test[,-ncol(test)])
 predictedTS <- predsvm
 
 test[,ncol(test)] <- predictedTS
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,7])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,8])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,9])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,10])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,11])) ) ) 
-test <- rbind(test,t(na.omit(data.frame(assa[1:21,12])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,16])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,17])) ) ) 
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,18])) ) )
+test <- rbind(test,t(na.omit(data.frame(assa[1:24,19])) ) )
+# test <- rbind(test,t(na.omit(data.frame(assa[1:24,11])) ) )
+# test <- rbind(test,t(na.omit(data.frame(assa[1:24,12])) ) )
 
 
-plot(test[1,],type="b",col="blue", ylim=c(min(test[1,],test[7,]),max(test[1,],test[7,])))
+plot(test[1,],type="b",col="blue", ylim=c(0,500000))
 lines(test[7,],type="b",col="red")
 
-plot(test[2,],type="b",col="blue", ylim=c(min(test[2,],test[8,]),max(test[2,],test[8,])))
+plot(test[2,],type="b",col="blue")
 lines(test[8,],type="b",col="red")
 
 plot(test[3,],type="b",col="blue", ylim=c(min(test[3,],test[9,]),max(test[3,],test[9,])))
 lines(test[9,],type="b",col="red")
 
-plot(test[4,],type="b",col="blue", ylim=c(min(test[4,],test[10,]),max(test[4,],test[10,])))
-lines(test[10,],type="b",col="red")
+plot(test[4,],type="b",col="blue", ylim=c(min(test[4,],test[9,]),max(test[4,],test[9,])))
+lines(test[9,],type="b",col="red")
 
 plot(test[5,],type="b",col="blue", ylim=c(min(test[5,],test[11,]),max(test[5,],test[11,])))
 lines(test[11,],type="b",col="red")
@@ -324,4 +324,16 @@ lines(test[11,],type="b",col="red")
 plot(test[6,],type="b",col="blue", ylim=c(min(test[6,],test[12,]),max(test[6,],test[12,])))
 lines(test[12,],type="b",col="red")
 
+
+
+errorePrevisione <- (abs( ( test[5,(ncol(test)-1)] - test[1,(ncol(test)-1)]) / test[5,(ncol(test)-1)]) )+
+  (abs( ( test[6,(ncol(test)-1)] - test[2,(ncol(test)-1)]) / test[6,(ncol(test)-1)]) )+
+   (abs( ( test[7,(ncol(test)-1)] - test[3,(ncol(test)-1)]) / test[7,(ncol(test)-1)]) )+
+   (abs( ( test[8,(ncol(test)-1)] - test[4,(ncol(test)-1)]) / test[8,(ncol(test)-1)]) )
+  # (abs( ( test[11,(ncol(test)-1)] - test[5,(ncol(test)-1)]) / test[11,(ncol(test)-1)]) )+(abs( ( test[12,(ncol(test)-1)] - test[6,(ncol(test)-1)]) / test[12,(ncol(test)-1)]) )
+  
+
+
+
+errorePrevisione/6
 

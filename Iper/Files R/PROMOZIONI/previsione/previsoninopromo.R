@@ -229,6 +229,8 @@ appoggioDeptsPred <- appoggioDepts2017[,c(1:7)]
 appoggioDeptsPred <- appoggioDeptsPred[which(appoggioDeptsPred$ANNONO == 2017),]
 appoggioDeptsPred <- appoggioDeptsPred[,c(1:4,5:7)]
 appoggioDeptsPred <- unique(appoggioDeptsPred)
+
+
 totalTest <- data.frame()
 
 #VARIABILE CONTENENTE IL NUMERO DI PREVISIONI
@@ -308,7 +310,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
           
           training <- t(training[,-1])
           # SE C'è PIù DI UNA RIGA DI TRAINING CONTINUO, ALTRIMENTI SKIPPO PERCHè NON HO ABBASTANZA DATI
-          if(nrow(training) > 1){
+          if(nrow(training) > 2){
             
             
             # SE L'ULITMA COLONNA (TARGET) è COMPOSTA DA SOLI 0, MODIFICALA
@@ -342,9 +344,9 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             mode(training) = "numeric"
             #   ALLENO MODELLO
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             }
             # svmFit <- train(training[,-indexTrn],training[,indexTrn],method="svmRadial",tuneLength=15, trnControl=bootControl,preProcess = preProc ) 
             
@@ -401,11 +403,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             print("train 2")
             mode(training) = "numeric"
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             
             
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             }
             
             # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
@@ -448,11 +450,11 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             trControl <- trainControl(method = 'repeatedcv', number = 10, repeats = 10, savePredictions = T)
             mode(training) = "numeric"
             svmFit <- 0
-            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+            try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             
             
             if (class(svmFit) == "numeric"){
-              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 40)})
+              try({svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial",tuneLength = 45)})
             }
             # svmFit <- caret::train( training[,-ncol(training)], training[,ncol(training)] , method="svmRadial", trControl=trControl,tuneLength = 13)
             svmBest <-svmFit$finalModel    #modello migliore trovato con i parametri forniti
@@ -498,7 +500,7 @@ for(repartoSelected in unique(appoggioDepts2017$REPARTO)){
             }
             
             numeroRighe <- numeroRighe+nrow(t(dataModelFamAndEnte[,as.numeric(colnames(dataModel)[colSums(is.na(dataModel)) > 0] )]))
-            
+            print(numeroRighe)
             #ASSEGNO GLI STESSI NOMI ALLE COLONNE PER POTER FARE RBIND
             colnames(test) <- c(colnames(effectiveValue),"FAMIGLIA","ENTE","REPARTO","SETTORE","GRUPPO","clusterVector2")
             
@@ -553,7 +555,7 @@ rmse(actual = blabla[,(ncol(blabla)-1):ncol(blabla)] , predicted = appoggioDepts
 
 
 matriceFinale <- cbind( blabla[,(ncol(blabla)-1)], predicted = appoggioDeptsPred[,(ncol(appoggioDeptsPred)-1)] , abs( ( blabla[,(ncol(blabla)-1)] - appoggioDeptsPred[,(ncol(appoggioDeptsPred)-1)]) / blabla[,(ncol(blabla)-1)]) ,
-            blabla[,1:7])
+                        blabla[,1:7])
 
 
 View(cbind( blabla[,(ncol(blabla)-1)], predicted = appoggioDeptsPred[,(ncol(appoggioDeptsPred)-1)] , abs( ( blabla[,(ncol(blabla)-1)] - appoggioDeptsPred[,(ncol(appoggioDeptsPred)-1)]) / blabla[,(ncol(blabla)-1)]) ,
